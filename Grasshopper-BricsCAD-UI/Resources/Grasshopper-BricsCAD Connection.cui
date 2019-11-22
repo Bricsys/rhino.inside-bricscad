@@ -1,0 +1,120 @@
+﻿<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<CustSection xml:lang="en-US">
+  <MenuGroup Name="Grasshopper">
+    <MacroGroup Name="Grasshopper">
+      <MenuMacro UID="rhino">
+        <Macro>
+          <Name>Rhino</Name>
+          <Command>^c^c_rhino</Command>
+          <HelpString>Launch Rhino</HelpString>
+          <Image ID="Rhino.png"/></Macro>
+      </MenuMacro>
+      <MenuMacro UID="grasshopper">
+        <Macro>
+          <Name>Grasshopper</Name>
+          <Command>^c^c_grasshopper</Command>
+          <HelpString>Launch Grasshopper</HelpString>
+          <Image ID="Grasshopper.png"/>
+        </Macro>
+      </MenuMacro>
+      <MenuMacro UID="tograsshopper">
+        <Macro>
+          <Name>ToGrasshopper</Name>
+          <Command>^c^c_tograsshopper</Command>
+          <HelpString>Creates gh parameters using selected object</HelpString>
+          <Image ID="ToGrasshopper.png"/>
+        </Macro>
+      </MenuMacro>
+    </MacroGroup>
+    <MenuRoot>
+      <PopMenuRoot>
+        <PopMenu UID="mnGrasshopper">
+          <Alias>Grasshopper</Alias>
+          <Name>&amp;Grasshopper</Name>
+          <PopMenuItem>
+            <NameRef>&amp;Rhino</NameRef>
+            <MenuItem>
+              <MacroRef MenuMacroID="rhino"/>
+            </MenuItem>
+          </PopMenuItem>
+          <PopMenuItem>
+            <NameRef>&amp;Grasshopper</NameRef>
+            <MenuItem>
+              <MacroRef MenuMacroID="grasshopper"/>
+            </MenuItem>
+          </PopMenuItem>
+        </PopMenu>
+      </PopMenuRoot>
+      <RibbonRoot>
+        <RibbonTabSourceCollection>
+          <RibbonTabSource Text="Grasshopper" UID="Grasshopper-BricsCAD">
+            <Name>Grasshopper</Name>
+            <RibbonPanelSourceReference PanelId="Grasshopper-BricsCAD"/>
+          </RibbonTabSource>
+        </RibbonTabSourceCollection>
+        <RibbonPanelSourceCollection>
+          <RibbonPanelSource Text="Grasshopper" UID="Grasshopper-BricsCAD">
+            <Name>Grasshopper</Name>
+            <RibbonRow>
+              <RibbonCommandButton ButtonStyle="LargeWithHorizontalText" MenuMacroID="rhino" Text="Rhino"/>
+              <RibbonCommandButton ButtonStyle="LargeWithHorizontalText" MenuMacroID="grasshopper" Text="Grasshopper"/>
+            </RibbonRow>
+          </RibbonPanelSource>
+        </RibbonPanelSourceCollection>
+      </RibbonRoot>
+      <MouseButtonRoot/>
+      <DoubleClickRoot/>
+      <DigitizerButtonRoot/>
+      <TabletMenuRoot/>
+      <QuadRoot>
+        <QuadTabs>
+          <QuadTab ID="qt_Grasshopper-BricsCAD Connection" Name="Grasshopper" NameRef="Grasshopper">
+            <QuadButton ID="rhino" QuadAnalyzerId="CUI.Grasshopper"/>
+            <QuadButton ID="grasshopper" QuadAnalyzerId="CUI.Grasshopper"/>
+            <QuadButton ID="tograsshopper" QuadAnalyzerId="CUI.Grasshopper"/>
+          </QuadTab>
+        </QuadTabs>
+        <QuadButtons>
+          <QuadButton MenuMacroID="rhino">
+            <Filter Alias="NO_SELECTION"/>
+          </QuadButton>
+          <QuadButton MenuMacroID="grasshopper">
+            <Filter Alias="NO_SELECTION"/>
+          </QuadButton>
+          <QuadButton MenuMacroID="tograsshopper">
+            <Filter Alias="OBJECT_ANY"/>
+            <Filter Alias="OBJECTS_ANY"/>
+            <Filter Alias="OBJECT_3DSOLID_EDGE"/>
+            <Filter Alias="OBJECTS_3DSOLID_EDGE"/>
+            <Filter Alias="OBJECT_SURFACE_EDGE"/>
+            <Filter Alias="OBJECTS_SURFACE_EDGE"/>
+            <Filter Alias="OBJECT_REGION_EDGE"/>
+            <Filter Alias="OBJECTS_REGION_EDGE"/>
+            <Filter Alias="OBJECT_3DSOLID_FACE"/>
+            <Filter Alias="OBJECTS_3DSOLID_FACE"/>
+            <Filter Alias="OBJECT_SURFACE_FACE"/>
+            <Filter Alias="OBJECTS_SURFACE_FACE"/>
+          </QuadButton>
+        </QuadButtons>
+      </QuadRoot>
+      <ToolbarRoot>
+        <Toolbar ToolbarOrient="floating" ToolbarVisible="hide" UID="tbGrasshopper-BricsCAD" rows="1">
+          <Alias>TB_Grasshopper-BricsCAD</Alias>
+          <Name>Grasshopper</Name>
+          <ToolbarButton>
+            <Name>Rhino</Name>
+            <MenuItem>
+              <MacroRef MenuMacroID="rhino"/>
+            </MenuItem>
+          </ToolbarButton>
+          <ToolbarButton>
+            <Name>Grasshopper</Name>
+            <MenuItem>
+              <MacroRef MenuMacroID="grasshopper"/>
+            </MenuItem>
+          </ToolbarButton>
+        </Toolbar>
+      </ToolbarRoot>
+    </MenuRoot>
+  </MenuGroup>
+</CustSection>
