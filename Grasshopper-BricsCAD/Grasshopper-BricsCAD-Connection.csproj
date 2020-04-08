@@ -89,6 +89,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="Rhinoceros.cs" />
     <Compile Include="SelectionUtils.cs" />
     <Compile Include="UI\BakeUI.cs">
       <SubType>Form</SubType>

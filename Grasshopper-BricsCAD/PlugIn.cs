@@ -15,7 +15,6 @@ namespace GH_BC
 {
   public class PlugIn : IExtensionApplication
   {
-    private RhinoCore _rhinoCore;
     private static bool _grasshopperLoaded = false;
     private static bool _neewRedraw = true;
     private GrasshopperPreview _preview = null;
@@ -75,19 +74,8 @@ namespace GH_BC
     public void Initialize()
     {
       Instance = this;
-      // Load Rhino
-      try
-      {
-        var scheme_name = string.Format("BricsCAD.{0}", Application.Version);
-        _rhinoCore = new RhinoCore(new[] { $"/scheme={scheme_name}", "/nosplash" }, WindowStyle.Hidden, Application.MainWindow.Handle);
-      }
-      catch
-      {
-        // ignored
-      }
-
       var editor = Application.DocumentManager.MdiActiveDocument.Editor;
-      if (_rhinoCore == null)
+      if (!Rhinoceros.Startup())
       {
         editor.WriteMessage("\nFailed to start Rhino WIP");
         return;
@@ -101,9 +89,9 @@ namespace GH_BC
     {
       Application.Idle -= onIdle;
       Application.DocumentManager.DocumentDestroyed -= OnBcDocDestroyed;
+      Rhinoceros.Shutdown();
       try
       {
-        _rhinoCore?.Dispose();
         _preview?.Dispose();
       }
       catch

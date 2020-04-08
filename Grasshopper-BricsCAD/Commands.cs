@@ -7,84 +7,19 @@ using Teigha.DatabaseServices;
 using Teigha.Runtime;
 
 // This line is not mandatory, but improves loading performances
-[assembly: CommandClass(typeof(GH_BC.TestCommands))]
+[assembly: CommandClass(typeof(GH_BC.Commands))]
 
 namespace GH_BC
 {
   // This class is instantiated by BricsCAD for each document when
   // a command is called by the user the first time in the context
   // of a given document
-  public class TestCommands
+  public class Commands
   {
-    public static void ResetDocumentUnits(Rhino.RhinoDoc rhinoDoc, Document bricscadDoc = null)
-    {
-      bool docModified = rhinoDoc.Modified;
-      if (bricscadDoc == null)
-      {
-        rhinoDoc.ModelUnitSystem = Rhino.UnitSystem.None;
-      }
-      else
-      {
-        var units = bricscadDoc.Database.Insunits;
-        rhinoDoc.ModelUnitSystem = units.ToRhino();
-        bool imperial = rhinoDoc.ModelUnitSystem == Rhino.UnitSystem.Feet || rhinoDoc.ModelUnitSystem == Rhino.UnitSystem.Inches;
-
-        {
-          var modelPlane = Rhino.Geometry.Plane.WorldXY;
-
-          var modelGridSpacing = imperial ?
-          1.0 * Rhino.RhinoMath.UnitScale(Rhino.UnitSystem.Yards, rhinoDoc.ModelUnitSystem) :
-          1.0 * Rhino.RhinoMath.UnitScale(Rhino.UnitSystem.Meters, rhinoDoc.ModelUnitSystem);
-
-          var modelSnapSpacing = imperial ?
-          1 / 16.0 * Rhino.RhinoMath.UnitScale(Rhino.UnitSystem.Inches, rhinoDoc.ModelUnitSystem) :
-          1.0 * Rhino.RhinoMath.UnitScale(Rhino.UnitSystem.Millimeters, rhinoDoc.ModelUnitSystem);
-
-          var modelThickLineFrequency = imperial ? 6 : 5;
-
-          foreach (var view in rhinoDoc.Views)
-          {
-            var cplane = view.MainViewport.GetConstructionPlane();
-
-            cplane.GridSpacing = modelGridSpacing;
-            cplane.SnapSpacing = modelSnapSpacing;
-            cplane.ThickLineFrequency = modelThickLineFrequency;
-
-            view.MainViewport.SetConstructionPlane(cplane);
-
-            var min = cplane.Plane.PointAt(-cplane.GridSpacing * cplane.GridLineCount, -cplane.GridSpacing * cplane.GridLineCount, 0.0);
-            var max = cplane.Plane.PointAt(+cplane.GridSpacing * cplane.GridLineCount, +cplane.GridSpacing * cplane.GridLineCount, 0.0);
-            var bbox = new Rhino.Geometry.BoundingBox(min, max);
-
-            // Zoom to grid
-            view.MainViewport.ZoomBoundingBox(bbox);
-
-            // Adjust to extens in case There is anything in the viewports like Grasshopper previews.
-            view.MainViewport.ZoomExtents();
-          }
-        }
-      }
-
-      rhinoDoc.Modified = docModified;
-    }
-
     [CommandMethod("Rhino")]
     public static void StartRhino()
     {
-      var MainWindow = Rhino.UI.RhinoEtoApp.MainWindow;
-      if (MainWindow.Visible)
-      {
-        MainWindow.Visible = false;
-        var newDoc = Rhino.RhinoDoc.Create(null);
-        ResetDocumentUnits(newDoc, Application.DocumentManager.MdiActiveDocument);
-      }
-      else
-      {
-        MainWindow.Visible = true;
-        try { MainWindow.WindowState = Eto.Forms.WindowState.Normal; }
-        catch { }
-        ResetDocumentUnits(Rhino.RhinoDoc.ActiveDoc, Application.DocumentManager.MdiActiveDocument);
-      }
+      Rhinoceros.WindowVisible = !Rhinoceros.WindowVisible;
     }
     [CommandMethod("Grasshopper")]
     public static void StartGrasshopper()

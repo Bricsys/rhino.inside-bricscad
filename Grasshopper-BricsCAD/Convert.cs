@@ -122,7 +122,7 @@ namespace GH_BC
     static private Curve ToRhino(this _OdGe.CircularArc3d crv)
     {
       double param = 0.5 * (crv.GetParameterOf(crv.StartPoint) + crv.GetParameterOf(crv.EndPoint));
-      return crv.IsClosed() ? new ArcCurve(new Circle(crv.StartPoint.ToRhino(), crv.EvaluatePoint(param).ToRhino(), crv.EndPoint.ToRhino()))
+      return crv.IsClosed() ? new ArcCurve(new Circle(crv.GetPlane().ToRhino(), crv.Radius))
                             : new ArcCurve(new Arc(crv.StartPoint.ToRhino(), crv.EvaluatePoint(param).ToRhino(), crv.EndPoint.ToRhino()));
     }
     static private Curve ToRhino(this _OdGe.EllipticalArc3d crv)
