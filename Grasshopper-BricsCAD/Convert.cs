@@ -165,39 +165,48 @@ namespace GH_BC
         if (geometry != null)
           return geometry;
       }
-      var aObj = new _OdDb.DBObjectCollection() { ent };
       string tmpPath = Path.Combine(Path.GetTempPath(), "BricsCAD", "torhino.3dm");
-      if (_OdRx.ErrorStatus.OK != Bricscad.Rhino.RhinoUtilityFunctions.ExportRhinoFile(aObj, tmpPath))
-        return null;
-      aObj.Dispose();
+      using (var aObj = new _OdDb.DBObjectCollection() { ent })
+      {
+        if (_OdRx.ErrorStatus.OK != Bricscad.Rhino.RhinoUtilityFunctions.ExportRhinoFile(aObj, tmpPath))
+          return null;
+      }
       return ExtractGeometryFromFile(tmpPath);
     }
     static public GeometryBase ToRhino(this _OdDb.ObjectId id)
     {
-      if (DatabaseUtils.isCurve(id))
+      if (DatabaseUtils.IsCurve(id))
       {
-        var geometry = (id.GetObject(_OdDb.OpenMode.ForRead) as _OdDb.Curve).ToRhino();
-        if (geometry != null)
-          return geometry;
+        using (var dbCurve = id.GetObject(_OdDb.OpenMode.ForRead) as _OdDb.Curve)
+        {
+          var geometry = dbCurve?.ToRhino();
+          if (geometry != null)
+            return geometry;
+        }
       }
-      var aId = new _OdDb.ObjectIdCollection() { id };
+
       string tmpPath = Path.Combine(Path.GetTempPath(), "BricsCAD", "torhino.3dm");
-      if (_OdRx.ErrorStatus.OK != Bricscad.Rhino.RhinoUtilityFunctions.ExportRhinoFile(aId, tmpPath))
-        return null;
-      aId.Dispose();
+      using (var aId = new _OdDb.ObjectIdCollection() { id })
+      {
+        if (_OdRx.ErrorStatus.OK != Bricscad.Rhino.RhinoUtilityFunctions.ExportRhinoFile(aId, tmpPath))
+          return null;
+      }
       return ExtractGeometryFromFile(tmpPath);
     }
     static private GeometryBase ExtractGeometryFromFile(string filename)
     {
       GeometryBase geometry = null;
-      var rhinoFile = Rhino.FileIO.File3dm.Read(filename);
-      foreach (var fileObj in rhinoFile.Objects)
+      using (var rhinoFile = Rhino.FileIO.File3dm.Read(filename))
       {
-        geometry = fileObj.Geometry?.Duplicate();
-        if (geometry != null)
-          break;
+        foreach (var fileObj in rhinoFile.Objects)
+        {
+          if (fileObj.Geometry is InstanceReferenceGeometry)
+            continue;
+          geometry = fileObj.Geometry?.Duplicate();
+          if (geometry != null)
+            break;
+        }
       }
-      rhinoFile.Dispose();
       return geometry;
     }
   }

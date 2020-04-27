@@ -3,152 +3,134 @@ using Grasshopper;
 using System.Collections.Generic;
 using System.Linq;
 using System;
-
 using Teigha.GraphicsInterface;
 
-namespace GH_BC
+namespace GH_BC.Visualization
 {
   class GrasshopperPreview : IDisposable
   {
-    public static GH_Document ActiveDefinition = null;
-    Teigha.Geometry.IntegerCollection VieportNums = new Teigha.Geometry.IntegerCollection();
-    private List<IGH_DocumentObject> LastSelection = new List<IGH_DocumentObject>();
+    private GH_Document _activeDefinition = null;
+    private readonly Teigha.Geometry.IntegerCollection _vieportNums = new Teigha.Geometry.IntegerCollection();
+    private List<IGH_DocumentObject> _lastSelection = new List<IGH_DocumentObject>();
     private List<IGH_Param> _bcSelection = new List<IGH_Param>();
-    TransientManager GraphicsManager;
-    CompoundDrawable CompoundDrawable = null;
+    private CompoundDrawable _compoundDrawable = null;
     public GrasshopperPreview()
     {
       Init();
-      CompoundDrawable = new CompoundDrawable();
-      GraphicsManager = TransientManager.CurrentTransientManager;
-      GraphicsManager.AddTransient(CompoundDrawable, TransientDrawingMode.Main, 128, VieportNums);
+      _compoundDrawable = new CompoundDrawable();
     }
     public void Dispose()
     {
-      GraphicsManager?.EraseTransient(CompoundDrawable, VieportNums);
-      GraphicsManager?.Dispose();
+      GhDrawingContext.LinkedDocument.TransientGraphicsManager()?.EraseTransient(_compoundDrawable, _vieportNums);
       GC.SuppressFinalize(this);
     }
-    Rhino.Geometry.MeshingParameters MeshParameters => ActiveDefinition.PreviewCurrentMeshParameters() ?? Rhino.Geometry.MeshingParameters.Default;
     public bool Init()
     {
       var editor = Instances.DocumentEditor;
       var canvas = Instances.ActiveCanvas;
       var definition = canvas?.Document;
 
-      if (definition != ActiveDefinition)
+      if (definition != _activeDefinition)
       {
-        PlugIn.SetNeetRedraw();
+        GhDrawingContext.NeedRedraw = true;
         UnhighlightBcData();
-        if (ActiveDefinition != null)
+        if (_activeDefinition != null)
         {
           if (editor != null) editor.VisibleChanged -= Editor_VisibleChanged;
-          ActiveDefinition.SolutionEnd -= ActiveDefinition_SolutionEnd;
-          ActiveDefinition.SettingsChanged -= ActiveDefinition_SettingsChanged;
+          _activeDefinition.SolutionEnd -= ActiveDefinition_SolutionEnd;
+          _activeDefinition.SettingsChanged -= ActiveDefinition_SettingsChanged;
           GH_Document.DefaultSelectedPreviewColourChanged -= Document_DefaultPreviewColourChanged;
           GH_Document.DefaultPreviewColourChanged -= Document_DefaultPreviewColourChanged;
         }
 
-        ActiveDefinition = definition;
+        _activeDefinition = definition;
 
-        if (ActiveDefinition != null)
+        if (_activeDefinition != null)
         {
           GH_Document.DefaultPreviewColourChanged += Document_DefaultPreviewColourChanged;
           GH_Document.DefaultSelectedPreviewColourChanged += Document_DefaultPreviewColourChanged;
-          ActiveDefinition.SettingsChanged += ActiveDefinition_SettingsChanged;
-          ActiveDefinition.SolutionEnd += ActiveDefinition_SolutionEnd;
+          _activeDefinition.SettingsChanged += ActiveDefinition_SettingsChanged;
+          _activeDefinition.SolutionEnd += ActiveDefinition_SolutionEnd;
           if (editor != null) editor.VisibleChanged += Editor_VisibleChanged;
         }
       }
-      return ActiveDefinition != null;
+
+      if (SelectionPreviewChanged())
+        GhDrawingContext.NeedRedraw = true;
+
+      return _activeDefinition != null;
     }
-
-    public bool SelectionPreviewChanged()
+    private bool SelectionPreviewChanged()
     {
-      if (Instances.ActiveCanvas?.Document != ActiveDefinition)
-        return true;
-
-      if (ActiveDefinition != null)
+      if (_activeDefinition != null)
       {
-        var newSelection = ActiveDefinition.SelectedObjects();
-        if (LastSelection.Count != newSelection.Count || LastSelection.Except(newSelection).Any())
+        var newSelection = _activeDefinition.SelectedObjects();
+        if (_lastSelection.Count != newSelection.Count || _lastSelection.Except(newSelection).Any())
         {
-          LastSelection = newSelection;
+          _lastSelection = newSelection;
           return true;
         }
       }
-
       return false;
     }
-
     #region GH Doucement event handlers
     private static void Document_DefaultPreviewColourChanged(System.Drawing.Color colour)
     {
-      PlugIn.SetNeetRedraw();
+      GhDrawingContext.NeedRedraw = true;
     }
     private static void Editor_VisibleChanged(object sender, EventArgs e)
     {
-      PlugIn.SetNeetRedraw();
+      GhDrawingContext.NeedRedraw = true;
     }
     private void ActiveDefinition_SettingsChanged(object sender, GH_DocSettingsEventArgs e)
     {
-      PlugIn.SetNeetRedraw();
+      GhDrawingContext.NeedRedraw = true;
     }
     private void ActiveDefinition_ModifiedChanged(object sender, GH_DocModifiedEventArgs e)
     {
-      PlugIn.SetNeetRedraw();
+      GhDrawingContext.NeedRedraw = true;
     }
     private void ActiveDefinition_SolutionEnd(object sender, GH_SolutionEventArgs e)
     {
-      PlugIn.SetNeetRedraw();
+      GhDrawingContext.NeedRedraw = true;
     }
     #endregion
-
     public void BuildScene()
     {
-      CompoundDrawable.Clear();
-      if (ActiveDefinition == null)
+      var graphicsManager = GhDrawingContext.LinkedDocument.TransientGraphicsManager();
+      graphicsManager.AddTransient(_compoundDrawable, TransientDrawingMode.Main, 128, _vieportNums);
+      _compoundDrawable.Clear();
+      if (_activeDefinition == null)
       {
-        GraphicsManager.UpdateTransient(CompoundDrawable, VieportNums);
+        graphicsManager.UpdateTransient(_compoundDrawable, _vieportNums);
         return;
       }
-      CompoundDrawable.Colour = ActiveDefinition.PreviewColour;
-      CompoundDrawable.ColourSelected = ActiveDefinition.PreviewColourSelected;
+      _compoundDrawable.Color = _activeDefinition.PreviewColour;
+      _compoundDrawable.ColorSelected = _activeDefinition.PreviewColourSelected;
 
-      if (ActiveDefinition.PreviewMode != GH_PreviewMode.Disabled && Instances.EtoDocumentEditor.Visible)
+      if (_activeDefinition.PreviewMode != GH_PreviewMode.Disabled && Instances.EtoDocumentEditor.Visible)
       {
-        CompoundDrawable.IsRenderMode = ActiveDefinition.PreviewMode == GH_PreviewMode.Shaded;
-
-        foreach (var obj in ActiveDefinition.Objects.OfType<IGH_ActiveObject>())
+        _compoundDrawable.IsRenderMode = _activeDefinition.PreviewMode == GH_PreviewMode.Shaded;
+        Action<IGH_ActiveObject> onBcObject = (obj) =>
         {
-          if (obj.Locked)
-            continue;
+          if (obj.Category == "BricsCAD" && obj is IGH_Param param)
+            HighlightBcData(param);
+        };
+        Action<IGH_ActiveObject> onSuccessfulExtract = (obj) =>
+        {
+          obj.ObjectChanged += ObjectChanged;
+        };
 
-          if (obj is IGH_PreviewObject previewObject)
-          {
-            if (previewObject.IsPreviewCapable)
-            {
-              if (obj is IGH_Component component)
-              {
-                foreach (var param in component.Params.Output)
-                  DrawData(param.VolatileData, obj);
-              }
-              else if (obj is IGH_Param param)
-                DrawData(param.VolatileData, obj);
-            }
-          }
-          else if(obj.Category == "BricsCAD" && obj is IGH_Param param)
-              HighlightBcData(param);
-        }
+        GetPreview(_activeDefinition, _compoundDrawable, onBcObject, onSuccessfulExtract);
       }
-      GraphicsManager.UpdateTransient(CompoundDrawable, VieportNums);
+      graphicsManager.UpdateTransient(_compoundDrawable, _vieportNums);
     }
-    void ObjectChanged(IGH_DocumentObject sender, GH_ObjectChangedEventArgs e)
+    private void ObjectChanged(IGH_DocumentObject sender, GH_ObjectChangedEventArgs e)
     {
       if (e.Type == GH_ObjectEventType.Preview)
-        PlugIn.SetNeetRedraw();
+        GhDrawingContext.NeedRedraw = true;
     }
-    void HighlightBcData(IGH_Param param)
+    private void HighlightBcData(IGH_Param param)
     {
       bool highlight = param.Attributes.Selected && !_bcSelection.Contains(param);
       bool dehighlight = !param.Attributes.Selected && _bcSelection.Contains(param);
@@ -164,7 +146,7 @@ namespace GH_BC
       else if(dehighlight)
         _bcSelection.Remove(param);
     }
-    void UnhighlightBcData()
+    private void UnhighlightBcData()
     {
       foreach(var param in _bcSelection)
       {
@@ -173,40 +155,26 @@ namespace GH_BC
       }
       _bcSelection.Clear();
     }
-    void DrawData(Grasshopper.Kernel.Data.IGH_Structure volatileData, IGH_DocumentObject docObject)
+    private static void ExtractGeometry(Grasshopper.Kernel.Data.IGH_Structure volatileData,
+                                        ref List<Rhino.Geometry.GeometryBase> resGeom,
+                                        bool isRenderMode,
+                                        Rhino.Geometry.MeshingParameters meshParams)
     {
-      if (docObject is IGH_PreviewObject preview)
+      foreach (var value in volatileData.AllData(true))
       {
-        if (preview.Hidden)
-          return;
-      }
-
-      if (!volatileData.IsEmpty)
-      {
-        foreach (var value in volatileData.AllData(true))
-        {
-          if (value is IGH_PreviewData)
-          {
-            bool isSelected = docObject.Attributes.Selected;
-            if (ActiveDefinition.PreviewFilter == GH_PreviewFilter.Selected && !isSelected)
-              continue;
-            var geometries = new List<Rhino.Geometry.GeometryBase>();
-            ExtractGeometry(value, ref geometries);
-            if (geometries.Count != 0)
-            {
-              geometries.ForEach(geometryBase => AddDrawable(geometryBase, isSelected));
-              docObject.ObjectChanged += ObjectChanged;
-            }
-          }
-        }
+        if (value is IGH_PreviewData)
+          ExtractGeometry(value, ref resGeom, isRenderMode, meshParams);
       }
     }
-    private void ExtractGeometry(Grasshopper.Kernel.Types.IGH_Goo iGoo, ref List<Rhino.Geometry.GeometryBase> resGeom)
+    private static void ExtractGeometry(Grasshopper.Kernel.Types.IGH_Goo iGoo,
+                                        ref List<Rhino.Geometry.GeometryBase> resGeom,
+                                        bool isRenderMode,
+                                        Rhino.Geometry.MeshingParameters meshParams)
     {
       if (iGoo is Grasshopper.Kernel.Types.GH_GeometryGroup group)
       {
         foreach (var geomGoo in group.Objects)
-          ExtractGeometry(geomGoo, ref resGeom);
+          ExtractGeometry(geomGoo, ref resGeom, isRenderMode, meshParams);
         return;
       }
 
@@ -237,12 +205,14 @@ namespace GH_BC
             geometryBase = curve;
             break;
           case Rhino.Geometry.Box box:
-            geometryBase = Rhino.Geometry.Mesh.CreateFromBox(box, 1, 1, 1); break;
+            geometryBase = Rhino.Geometry.Mesh.CreateFromBox(box, 1, 1, 1);
+            break;
           case Rhino.Geometry.Mesh mesh:
-            geometryBase = mesh; break;
+            geometryBase = mesh;
+            break;
           case Rhino.Geometry.Brep brep:
             {
-              if (!CompoundDrawable.IsRenderMode)
+              if (!isRenderMode)
               {
                 foreach (var crv in brep.GetWireframe(-1))
                   resGeom.Add(crv);
@@ -250,7 +220,7 @@ namespace GH_BC
               else
               {
                 var previewMesh = new Rhino.Geometry.Mesh();
-                previewMesh.Append(Rhino.Geometry.Mesh.CreateFromBrep(brep, MeshParameters));
+                previewMesh.Append(Rhino.Geometry.Mesh.CreateFromBrep(brep, meshParams));
                 geometryBase = previewMesh;
               }
               break;
@@ -278,9 +248,44 @@ namespace GH_BC
       if(geometryBase != null)
         resGeom.Add(geometryBase);
     }
-    private void AddDrawable(Rhino.Geometry.GeometryBase geom, bool isSelected)
+    public static void GetPreview(GH_Document definition, CompoundDrawable compoundDrawable,
+                                  Action<IGH_ActiveObject> onNotDrawble = null, Action<IGH_ActiveObject> onSuccessfulExtract = null)
     {
-      CompoundDrawable.AddDrawable(new PreviewDrawable(geom), isSelected);
+      var meshParameters = definition.PreviewCurrentMeshParameters() ?? Rhino.Geometry.MeshingParameters.Default;
+      var isRenderMode = definition.PreviewMode == GH_PreviewMode.Shaded;
+
+      foreach (var obj in definition.Objects.OfType<IGH_ActiveObject>())
+      {
+        if (obj.Locked)
+          continue;
+
+        bool isSelected = obj.Attributes.Selected;
+        if (definition.PreviewFilter == GH_PreviewFilter.Selected && !isSelected)
+          continue;
+
+        if (obj is IGH_PreviewObject previewObject)
+        { 
+          if (previewObject.IsPreviewCapable && !previewObject.Hidden)
+          {
+            var geometries = new List<Rhino.Geometry.GeometryBase>();
+            if (obj is IGH_Component component)
+            {
+              foreach (var param in component.Params.Output)
+                ExtractGeometry(param.VolatileData, ref geometries, isRenderMode, meshParameters);
+            }
+            else if (obj is IGH_Param param)
+              ExtractGeometry(param.VolatileData, ref geometries, isRenderMode, meshParameters);
+
+            if (geometries.Count != 0)
+            {
+              geometries.ForEach(geom => compoundDrawable.AddDrawable(new PreviewDrawable(geom), isSelected));
+              onSuccessfulExtract?.Invoke(obj);
+            }
+          }
+        }
+        else
+          onNotDrawble?.Invoke(obj);
+      }
     }
   }
 }

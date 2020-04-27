@@ -4,11 +4,11 @@ using System.Linq;
 using System;
 using Teigha.DatabaseServices;
 
-namespace GH_BC
+namespace GH_BC.Components
 {  
   public class DocumentElementsComponent : GH_Component, IGH_BcComponent
   {
-    public DocumentElementsComponent() : base("Document Elements", "DE", "By default, returns all the building elements present in BricsCAD. When using input parameters, returns the building elements filtered by element type and/or spatial location.", "BricsCAD", GhUI.BuildingElements)
+    public DocumentElementsComponent() : base("Document Elements", "DE", "By default, returns all the building elements present in BricsCAD. When using input parameters, returns the building elements filtered by element type and/or spatial location.", "BricsCAD", UI.GhUI.BuildingElements)
     {}
     public override Guid ComponentGuid => new Guid("1A940043-04FC-411C-A9CC-A70665B246D5");
     public override GH_Exposure Exposure => GH_Exposure.secondary;
@@ -20,7 +20,7 @@ namespace GH_BC
       if (erased.Count > 0 || added.Count > 0)
         return true;
 
-      foreach (var param in Params.Output.OfType<IGH_BcParam>())
+      foreach (var param in Params.Output.OfType<Parameters.IGH_BcParam>())
       {
         if (param.NeedsToBeExpired(modified, erased, added, finishedCmds))
           return true;
@@ -29,12 +29,12 @@ namespace GH_BC
     }
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      pManager[pManager.AddParameter(new SpatialLocation(), "SpatialLocation", "SL", "SpatialLocation", GH_ParamAccess.list)].Optional = true;
-      pManager[pManager.AddParameter(new ElementType(), "ElementType", "T", "ElementType", GH_ParamAccess.list)].Optional = true;
+      pManager[pManager.AddParameter(new Parameters.SpatialLocation(), "SpatialLocation", "SL", "SpatialLocation", GH_ParamAccess.list)].Optional = true;
+      pManager[pManager.AddParameter(new Parameters.ElementType(), "ElementType", "T", "ElementType", GH_ParamAccess.list)].Optional = true;
     }
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
-      pManager.AddParameter(new BcEntity(), "Element", "BE", "Element", GH_ParamAccess.list);
+      pManager.AddParameter(new Parameters.BcEntity(), "Element", "BE", "Element", GH_ParamAccess.list);
     }
     protected override void SolveInstance(IGH_DataAccess DA)
     {
@@ -49,11 +49,11 @@ namespace GH_BC
       {
         bimElements = new ObjectIdCollection();
         foreach (var elementType in elementTypes)
-          foreach (ObjectId objId in Bricscad.Bim.BIMClassification.GetAllClassifiedAs(elementType.Value, PlugIn.LinkedDocument.Database))
+          foreach (ObjectId objId in Bricscad.Bim.BIMClassification.GetAllClassifiedAs(elementType.Value, GhDrawingContext.LinkedDocument.Database))
             bimElements.Add(objId);
       }
       else
-        bimElements = Bricscad.Bim.BIMClassification.GetAllClassified(PlugIn.LinkedDocument.Database);
+        bimElements = Bricscad.Bim.BIMClassification.GetAllClassified(GhDrawingContext.LinkedDocument.Database);
 
       if (spatialLocations.Count != 0)
       {
@@ -67,7 +67,7 @@ namespace GH_BC
 
       var res = new List<Types.BcEntity>();
       foreach(ObjectId objId in bimElements)
-        res.Add(new Types.BcEntity(new FullSubentityPath(new ObjectId[] { objId } , new SubentityId()), PlugIn.LinkedDocument.Name));
+        res.Add(new Types.BcEntity(new FullSubentityPath(new ObjectId[] { objId } , new SubentityId()), GhDrawingContext.LinkedDocument.Name));
       DA.SetDataList("Element", res);
     }
   }

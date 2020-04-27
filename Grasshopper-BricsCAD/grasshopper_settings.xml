@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<settings xml:lang="en-US">
+	<cat name="Grasshopper">
+		<title>Grasshopper</title>
+		<cat name="Visualization">
+			<title>Visualization</title>
+			<var prog="b" save="dwg" name="GhColor" type="str">
+				<title>Grasshopper graphics color</title>
+				<help>Color of the grasshopper graphics.</help>
+				<value subtype="rgbcolor" default="#FF0000"/>
+			</var>
+			<var prog="b" save="dwg" name="GhTransparency" type="int">
+				<title>Grasshopper graphics transparency</title>
+				<help>Transparency of the grasshopper graphics.</help>
+				<value min="1" max="100" default="90"/>
+			</var>
+			<var prog="b" save="dwg" name="GhHostTransparency" type="int">
+				<title>Host entity transparency</title>
+				<help>Transparency of the grasshopper graphics.</help>
+				<value min="1" max="100" default="10"/>
+			</var>
+			<var prog="b" save="dwg" name="GhVisualStyle" type="int">
+				<title>Visual style</title>
+				<help>Visual style of the grasshopper graphics</help>
+				<value min="1" max="2" default="2"/>
+				<choose>
+					<option value="1">Wireframe</option>
+					<option value="2">Shaded</option>
+				</choose>
+			</var>
+			<var prog="b" save="dwg" name="GhMeshQuality" type="int">
+				<title>Mesh quality</title>
+				<help>Mesh quality of the grasshopper graphics</help>
+				<value min="0" max="2" default="1"/>
+				<choose>
+					<option value="0">Minimal</option>
+					<option value="1">Default</option>
+					<option value="2">High</option>
+				</choose>
+			</var>
+		</cat>
+	</cat>
+</settings>

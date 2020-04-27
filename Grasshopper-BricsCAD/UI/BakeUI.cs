@@ -1,6 +1,6 @@
 using System;
 
-namespace GH_BC
+namespace GH_BC.UI
 {
   public partial class BakeDialog : System.Windows.Forms.Form
   {

@@ -9,8 +9,9 @@ using System.Linq;
 using System.Windows.Forms;
 using System;
 using _OdDb = Teigha.DatabaseServices;
+using GH_BC.UI;
 
-namespace GH_BC
+namespace GH_BC.Components
 {  
   public class BakeComponent : GH_Component
   {
@@ -35,11 +36,11 @@ namespace GH_BC
     }
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
-      pManager.AddParameter(new BcEntity(), "BuildingElement", "BE", "Building element.", GH_ParamAccess.list);
+      pManager.AddParameter(new Parameters.BcEntity(), "BuildingElement", "BE", "Building element.", GH_ParamAccess.list);
     }
     protected override void SolveInstance(IGH_DataAccess DA)
     {
-      if (!_needBake || !PlugIn.LinkedDocument.IsActive)
+      if (!_needBake || !GhDrawingContext.LinkedDocument.IsActive)
         return;
       _needBake = false;
 
@@ -50,7 +51,7 @@ namespace GH_BC
       var objIds = BakeGhGeometry(geometry.AllData(true));
       var res = new List<Types.BcEntity>();
       foreach (_OdDb.ObjectId objId in objIds)
-        res.Add(new Types.BcEntity(new _OdDb.FullSubentityPath(new _OdDb.ObjectId[] { objId }, new _OdDb.SubentityId()), PlugIn.LinkedDocument.Name));
+        res.Add(new Types.BcEntity(new _OdDb.FullSubentityPath(new _OdDb.ObjectId[] { objId }, new _OdDb.SubentityId()), GhDrawingContext.LinkedDocument.Name));
       DA.SetDataList("BuildingElement", res);
     }
     protected override void AppendAdditionalComponentMenuItems(ToolStripDropDown menu)
@@ -67,16 +68,18 @@ namespace GH_BC
         _material = bakeProperties.Material;
         _needBake = true;
 
-        PlugIn.LinkedDocument?.Database?.StartUndoRecord();
+        GhDrawingContext.LinkedDocument?.Database?.StartUndoRecord();
         ExpireSolution(true);
       }
     }
     public _OdDb.ObjectIdCollection BakeGhGeometry(IGH_StructureEnumerator se)
     {
-      var tmpFile = new File3dm();
-      foreach (var paramValue in se)
-        AddGeometry(tmpFile, paramValue);
-      return BakeGhGeometry(tmpFile);
+      using (var tmpFile = new File3dm())
+      {
+        foreach (var paramValue in se)
+          AddGeometry(tmpFile, paramValue);
+        return BakeGhGeometry(tmpFile);
+      }
     }
     protected _OdDb.ObjectIdCollection BakeGhGeometry(File3dm tmpFile)
     {
@@ -85,13 +88,13 @@ namespace GH_BC
       {
         string tmpPath = Path.Combine(Path.GetTempPath(), "BricsCAD", "fromrhino.3dm");
         tmpFile.Write(tmpPath, new File3dmWriteOptions());
-        var objects = Bricscad.Rhino.RhinoUtilityFunctions.ImportRhinoFile(tmpPath, true);
-        foreach (var entity in objects.OfType<_OdDb.Entity>())
-          AssignTraits(entity);
-        dbObjects = DatabaseUtils.AppendObjectsToDatabase(objects, PlugIn.LinkedDocument.Database, false);
-        objects.Dispose();
+        using (var objects = Bricscad.Rhino.RhinoUtilityFunctions.ImportRhinoFile(tmpPath, true))
+        {
+          foreach (var entity in objects.OfType<_OdDb.Entity>())
+            AssignTraits(entity);
+          dbObjects = DatabaseUtils.AppendObjectsToDatabase(objects, GhDrawingContext.LinkedDocument.Database, false);
+        }
       }
-      tmpFile.Dispose();
       return dbObjects;
     }
     protected void AssignTraits(_OdDb.Entity entity)
@@ -142,17 +145,21 @@ namespace GH_BC
           continue;
 
         needExpire = true;
-        obj._needBake = true;
-        obj._color = bakeProperties.Color;
-        obj._layer = bakeProperties.Layer;
-        obj._material = bakeProperties.Material;
-        obj.ExpireSolution(false);
+        Expire(obj, bakeProperties);
       }
       if (needExpire)
       {
-        PlugIn.LinkedDocument?.Database?.StartUndoRecord();
+        GhDrawingContext.LinkedDocument?.Database?.StartUndoRecord();
         definition.NewSolution(false);
       }
+    }
+    public static void Expire(BakeComponent bakeComponent, BakeDialog bakeProperties)
+    {
+      bakeComponent._needBake = true;
+      bakeComponent._color = bakeProperties.Color;
+      bakeComponent._layer = bakeProperties.Layer;
+      bakeComponent._material = bakeProperties.Material;
+      bakeComponent.ExpireSolution(false);
     }
   }
 }

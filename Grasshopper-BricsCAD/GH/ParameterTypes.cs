@@ -40,7 +40,7 @@ namespace GH_BC.Types
     }
     public override bool IsReferencedGeometry => PersistentRef.Value != 0;
     public override bool IsGeometryLoaded => IsValid;
-    public override bool LoadGeometry() => IsValid || LoadGeometry(PlugIn.LinkedDocument);
+    public override bool LoadGeometry() => IsValid || LoadGeometry(GhDrawingContext.LinkedDocument);
     public Handle PersistentRef { get; private set; }
     public SubentityType SubentType { get; private set; }
     public int SubentIndex { get; private set; }
@@ -53,7 +53,7 @@ namespace GH_BC.Types
         return false;
 
       var id = ObjectId.Null;
-      if (!PlugIn.LinkedDocument.Database.TryGetObjectId(PersistentRef, out id))
+      if (!doc.Database.TryGetObjectId(PersistentRef, out id))
         return false;
 
       var subentId = new SubentityId(SubentType, SubentIndex);
@@ -69,12 +69,13 @@ namespace GH_BC.Types
       if (Value.IsSubentity())
       {
         var entity = ObjectId.GetObject(OpenMode.ForRead) as Entity;
-        geom = entity.GetSubentity(Value).ToRhino();
-        entity.Dispose();
+        var subent = entity?.GetSubentity(Value);
+        geom = subent?.ToRhino();
+        subent?.Dispose();
+        entity?.Dispose();
       }
       else
         geom = ObjectId.ToRhino();
-
       return geom;
     }
 
@@ -416,7 +417,7 @@ namespace GH_BC.Types
       {
         if (Grasshopper.Kernel.GH_Convert.ToString(source, out string val, Grasshopper.Kernel.GH_Conversion.Both))
         {
-          Value = Bricscad.Bim.BIMBuilding.GetBuilding(PlugIn.LinkedDocument.Database, val);
+          Value = Bricscad.Bim.BIMBuilding.GetBuilding(GhDrawingContext.LinkedDocument.Database, val);
           return IsValid;
         }
       }

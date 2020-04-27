@@ -7,8 +7,20 @@ using System.Drawing;
 using System.Linq;
 using System;
 using Teigha.DatabaseServices;
+using GH_BC.UI;
 
-namespace GH_BC
+namespace GH_BC.Components
+{
+  public interface IGH_BcComponent : IGH_Component
+  {
+    bool NeedsToBeExpired(ICollection<Handle> modified,
+                          ICollection<Handle> erased,
+                          ICollection<Handle> added,
+                          ICollection<string> finishedCmds);
+  }
+}
+
+namespace GH_BC.Parameters
 {
   public interface IGH_BcParam : IGH_Param
   {
@@ -20,13 +32,6 @@ namespace GH_BC
   public interface IGH_GeometryBcParam : IGH_BcParam
   {
     void InitBy(List<FullSubentityPath> aSubents, string docName);
-  }
-  public interface IGH_BcComponent : IGH_Component
-  {
-    bool NeedsToBeExpired(ICollection<Handle> modified,
-                          ICollection<Handle> erased,
-                          ICollection<Handle> added,
-                          ICollection<string> finishedCmds);
   }
 
   public abstract class GH_PersistentGeometryParam<X> :
@@ -77,10 +82,10 @@ namespace GH_BC
       Application.SetSystemVariable("CMDECHO", 0);
       string command = "(command \"ZOOM\" \"OB\" \"PRO\"";
       var args = PersistentData.AllData(true).OfType<X>()
-                               .Where(data => data.BcDocName == System.IO.Path.GetFileNameWithoutExtension(PlugIn.LinkedDocument.Name))
+                               .Where(data => data.BcDocName == System.IO.Path.GetFileNameWithoutExtension(GhDrawingContext.LinkedDocument.Name))
                                .Aggregate(string.Empty, (s, data) => s + " \"H\" \"" + data.PersistentRef.ToString() + "\" ");       
-      if (PlugIn.LinkedDocument.IsActive && args.Length > 0)
-        PlugIn.LinkedDocument.SendStringToExecute(command + args + " \"\" \"\")(setvar \"CMDECHO\" " + oldCmdEcho + ")(princ)\n", true, true, false);
+      if (GhDrawingContext.LinkedDocument.IsActive && args.Length > 0)
+        GhDrawingContext.LinkedDocument.SendStringToExecute(command + args + " \"\" \"\")(setvar \"CMDECHO\" " + oldCmdEcho + ")(princ)\n", true, true, false);
     }
 
     #region IGH_GeometryBcParam
@@ -118,7 +123,7 @@ namespace GH_BC
           for (int i = 0; i < branch.Count; i++)
           {
             var item = branch[i];
-            if (item == null || !item.LoadGeometry(PlugIn.LinkedDocument))
+            if (item == null || !item.LoadGeometry(GhDrawingContext.LinkedDocument))
             {
               string element = item != null ? item.TypeName : "Element";
               AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"A referenced {element} could not be found in the BricsCAD document.");

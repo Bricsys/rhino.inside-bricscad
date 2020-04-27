@@ -1,17 +1,17 @@
 using Grasshopper;
 using System.Windows.Forms;
-using System.Linq;
 using System.IO;
+using _BcAp = Bricscad.ApplicationServices;
 
-namespace GH_BC
+namespace GH_BC.UI
 {
-  public class GhUI
+  static class GhUI
   {
-    public static string InputGeometry = " Input geometry";
-    public static string BimData = "BIM Data";
-    public static string BuildingElements = "Building Elements";
-    public static string Information = "Information";
-    public static string Output = "Output";
+    public const string InputGeometry = " Input geometry";
+    public const string BimData = "BIM Data";
+    public const string BuildingElements = "Building Elements";
+    public const string Information = "Information";
+    public const string Output = "Output";
     static bool _customized = false;
     public static void CustomizeUI()
     {
@@ -30,8 +30,7 @@ namespace GH_BC
           {
             try
             {
-              string directory = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-              System.Diagnostics.Process.Start(@Path.Combine(directory, "Samples"));
+              System.Diagnostics.Process.Start(@Path.Combine(GhBcConnection.DllPath, "Samples"));
             }
             catch (System.Exception) { }
           };
@@ -45,14 +44,20 @@ namespace GH_BC
         {
           ToolTipText = "Link with current BricsCAD document"
         };
-        linkButton.Click += (s, e) => { PlugIn.RelinkToDoc(Bricscad.ApplicationServices.Application.DocumentManager.MdiActiveDocument); };
+        linkButton.Click += (s, e) =>
+        {
+          if (System.Convert.ToInt16(_BcAp.Application.GetSystemVariable("DWGTITLED")) == 0)
+            MessageBox.Show("Bricscad drawing must be saved before using Grasshopper");          
+          else
+            GhDrawingContext.RelinkToDoc(Bricscad.ApplicationServices.Application.DocumentManager.MdiActiveDocument);
+        };
         toolbar.Items.Add(linkButton);
 
         var bakeSelectedButton = new ToolStripButton(Properties.Resources.bake)
         {
           ToolTipText = "Bakes the geometry from the selected Bake Geometry and Building Element components"
         };
-        bakeSelectedButton.Click += (s, e) => { BakeComponent.BakeSelectedComponents(); };
+        bakeSelectedButton.Click += (s, e) => { Components.BakeComponent.BakeSelectedComponents(); };
         toolbar.Items.Add(bakeSelectedButton);
       }
     }
