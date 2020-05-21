@@ -1,18 +1,18 @@
 using Teigha.Geometry;
 using Teigha.GraphicsInterface;
 
-namespace GH_BC
+namespace GH_BC.Visualization
 {
   class PreviewDrawable
   {
-    protected Rhino.Geometry.GeometryBase Geometry;
+    private Rhino.Geometry.GeometryBase _geometry;
     public PreviewDrawable(Rhino.Geometry.GeometryBase geo)
     {
-      Geometry = geo;
+      _geometry = geo;
     }
     public bool WorldDraw(WorldDraw wd)
     {
-      if (Geometry is Rhino.Geometry.Mesh mesh)
+      if (_geometry is Rhino.Geometry.Mesh mesh)
       {
         var faces = mesh.Faces.ToHost();
         var points = new Point3dCollection(mesh.Vertices.ToHost());
@@ -22,7 +22,7 @@ namespace GH_BC
         vertexData.SetTrueColors(hasVertColor ? mesh.VertexColors.ToHost() : null);
         wd.Geometry.Shell(points, faces, null, null, vertexData, false);
       }
-      else if (Geometry is Rhino.Geometry.Curve curve)
+      else if (_geometry is Rhino.Geometry.Curve curve)
       {
         double deviation = System.Math.Max(wd.Deviation(DeviationType.MaxDevForCurve, curve.PointAtStart.ToHost()), 0.01 * curve.GetLength());
         var polyline = curve.ToPolyline(10E+4 * Convert.VertexTolerance, Convert.AngleTolerance, deviation, 0.0);
@@ -42,13 +42,13 @@ namespace GH_BC
         }
 #endif
       }
-      else if (Geometry is Rhino.Geometry.Point)
+      else if (_geometry is Rhino.Geometry.Point)
         return false;
       return true;
     }
     public void VieportDraw(ViewportDraw wd)
     {
-      if (Geometry is Rhino.Geometry.Point point)
+      if (_geometry is Rhino.Geometry.Point point)
       {
         var dbPoint = new Teigha.DatabaseServices.DBPoint(point.Location.ToHost());
         dbPoint.ViewportDraw(wd);

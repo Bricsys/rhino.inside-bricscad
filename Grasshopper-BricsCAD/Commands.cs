@@ -2,9 +2,12 @@ using Bricscad.ApplicationServices;
 using Bricscad.EditorInput;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using Teigha.DatabaseServices;
 using Teigha.Runtime;
+using _WF = System.Windows.Forms;
+using GH_BC.Parameters;
 
 // This line is not mandatory, but improves loading performances
 [assembly: CommandClass(typeof(GH_BC.Commands))]
@@ -24,26 +27,27 @@ namespace GH_BC
     [CommandMethod("Grasshopper")]
     public static void StartGrasshopper()
     {
-      PlugIn.LoadGrasshopperComponents();
+      Rhinoceros.LoadGrasshopperComponents();
       var ghDocEditor = Grasshopper.Instances.DocumentEditor;
       if (ghDocEditor == null || !ghDocEditor.Visible)
       {
         if (System.Convert.ToInt16(Application.GetSystemVariable("DWGTITLED")) == 0)
         {
-          System.Windows.Forms.MessageBox.Show("Bricscad drawing must be saved before using Grasshopper");
+          _WF.MessageBox.Show("Bricscad drawing must be saved before using Grasshopper");
           return;
         }
       }
       Rhino.RhinoApp.RunScript("!_-Grasshopper _W _T ENTER", false);
       if (Grasshopper.Instances.DocumentEditor.Visible)
-        PlugIn.RelinkToDoc(Application.DocumentManager.MdiActiveDocument);
-      GhUI.CustomizeUI();
+        GhDrawingContext.RelinkToDoc(Application.DocumentManager.MdiActiveDocument);
+      UI.GhUI.CustomizeUI();
     }
 
     [CommandMethod("ToGrasshopper")]
     public static void ToGrasshopper()
     {
-      if (PlugIn.LinkedDocument == null && Application.DocumentManager.MdiActiveDocument != PlugIn.LinkedDocument)
+      if (GhDrawingContext.LinkedDocument == null &&
+          Application.DocumentManager.MdiActiveDocument != GhDrawingContext.LinkedDocument)
         return;
 
       var editor = Application.DocumentManager.MdiActiveDocument.Editor;
@@ -88,23 +92,23 @@ namespace GH_BC
       switch (type)
       {
         case SubentityType.Null:
-          bool isCurve = selectedObjects.All(fsp => DatabaseUtils.isCurve(fsp.InsertId()));
+          bool isCurve = selectedObjects.All(fsp => DatabaseUtils.IsCurve(fsp.InsertId()));
           if (isCurve)
             monitor = new BcCurve();
           else
             monitor = new BcEntity();
           break;
         case SubentityType.Face:
-          monitor = new Face(); break;
+          monitor = new Parameters.Face(); break;
         case SubentityType.Edge:
-          monitor = new Edge(); break;
+          monitor = new Parameters.Edge(); break;
         case SubentityType.Vertex:
-          monitor = new Vertex(); break;
+          monitor = new Parameters.Vertex(); break;
       }
       if (monitor == null)
         return;
 
-      monitor.InitBy(selectedObjects, PlugIn.LinkedDocument.Name);
+      monitor.InitBy(selectedObjects, GhDrawingContext.LinkedDocument.Name);
       var ghDocObj = (Grasshopper.Kernel.GH_DocumentObject) monitor;
       if (ghDocObj != null)
       {
@@ -115,6 +119,113 @@ namespace GH_BC
                                                bounds.Top + ghDocObj.Attributes.Bounds.Height);
         ghDoc.AddObject(ghDocObj, true);
       }
+    }
+
+    [CommandMethod("AttachGhData")]
+    public static void AttachGhData()
+    {
+      var editor = Application.DocumentManager.MdiActiveDocument.Editor;
+      var database = editor.Document.Database;
+      var selection = editor.GetSelection();
+      if (selection.Status != PromptStatus.OK)
+        return;
+
+      string ghDef = null;
+      var srchPath = Application.GetSystemVariable("SRCHPATH") as string;
+      var dwgPath = Path.GetDirectoryName(Application.DocumentManager.MdiActiveDocument.Name);
+      while (true)
+      {
+        if (!GH_IO.Serialization.GH_Archive.OpenFileDialog("Select grasshopper defintion", ref ghDef, null)
+          || string.IsNullOrEmpty(ghDef))
+          return;
+        var ghDir = Path.GetDirectoryName(ghDef);
+        if (!srchPath.Contains(ghDir) && dwgPath != ghDir)
+        {
+          _WF.MessageBox.Show("Directory should be equal to the current DWG location or be contained in SRCHPATH");
+          continue;
+        }
+        break;
+      }
+      if (string.IsNullOrEmpty(ghDef))
+        return;
+
+      using (var transaction = database.TransactionManager.StartTransaction())
+      {
+        for (int i = 0; i < selection.Value.Count; ++i)
+        {
+          var ghData = new GrasshopperData(Path.GetFileName(ghDef))
+          {
+            IsVisible = true
+          };
+
+          var entity = transaction.GetObject(selection.Value[i].ObjectId, OpenMode.ForWrite) as Entity;
+          if (GrasshopperData.AttachGrasshopperData(entity, ghData))
+          {
+            var docExt = GhBcConnection.GrasshopperDataExtension.GrasshopperDataManager(Application.DocumentManager.MdiActiveDocument, true);
+            docExt.AddGrasshopperData(ghData);
+          }
+          ghData.Dispose();
+        }
+        transaction.Commit();
+      }
+    }
+    [CommandMethod("ClearGhData")]
+    public static void ClearGhData()
+    {
+      var editor = Application.DocumentManager.MdiActiveDocument.Editor;
+      var database = editor.Document.Database;
+      var selection = editor.GetSelection();
+      if (selection.Status != PromptStatus.OK)
+        return;
+
+      using (var transaction = database.TransactionManager.StartTransaction())
+      {
+        for (int i = 0; i < selection.Value.Count; ++i)
+        {
+          var entity = transaction.GetObject(selection.Value[i].ObjectId, OpenMode.ForWrite) as Entity;
+          GrasshopperData.RemoveGrasshopperData(entity);
+          entity?.RecordGraphicsModified(true);
+        }
+        transaction.Commit();
+      }
+    }
+    [CommandMethod("BakeGhData")]
+    public static void BakeGhData()
+    {
+      var editor = Application.DocumentManager.MdiActiveDocument.Editor;
+      var selection = editor.GetSelection();
+      if (selection.Status != PromptStatus.OK)
+        return;
+
+      var database = editor.Document.Database;
+      var ghDataToBake = new List<ObjectId>();
+      using (var transaction = database.TransactionManager.StartTransaction())
+      {
+        for (int i = 0; i < selection.Value.Count; ++i)
+        {
+          var entity = transaction.GetObject(selection.Value[i].ObjectId, OpenMode.ForRead) as Entity;
+          var id = GrasshopperData.GetGrasshopperData(entity);
+          if (!id.IsNull)
+            ghDataToBake.Add(id);
+        }
+        transaction.Commit();
+      }
+
+      if (ghDataToBake.Count == 0)
+        return;
+
+      var bakeProperties = new UI.BakeDialog();
+      if (bakeProperties.ShowDialog() != _WF.DialogResult.OK)
+        return;
+
+      var docExt = GhBcConnection.GrasshopperDataExtension.GrasshopperDataManager(Application.DocumentManager.MdiActiveDocument, true);
+      docExt?.Bake(ghDataToBake, bakeProperties);
+    }
+    [CommandMethod("GhDefinitions")]
+    public static void GhDefinitions()
+    {
+      var dlg = new UI.GhDefinitionDialog();
+      dlg.ShowDialog();
     }
   }
 }

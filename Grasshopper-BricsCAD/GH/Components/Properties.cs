@@ -4,8 +4,9 @@ using Grasshopper.Kernel;
 using System.Drawing;
 using System.Linq;
 using System;
+using GH_BC.UI;
 
-namespace GH_BC
+namespace GH_BC.Parameters
 {
   public class PropCategory : GH_Param<Types.PropCategory>
   {
@@ -38,7 +39,10 @@ namespace GH_BC
       }
     }
   }
+}
 
+namespace GH_BC.Components
+{
   public class GetPropertyNames : GH_Component
   {
     public GetPropertyNames() : base("Property Names", "PN", "Returns the property names, attached to a building element, in the specified property category.", "BricsCAD", GhUI.Information)
@@ -48,8 +52,8 @@ namespace GH_BC
     protected override Bitmap Icon => Properties.Resources.propertynames;
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      pManager.AddParameter(new BcEntity(), "BuildingElement", "BE", "Building element to extract properties names from.", GH_ParamAccess.item);
-      pManager[pManager.AddParameter(new PropCategory(), "PropCategory", "C", "Property category.", GH_ParamAccess.item)].Optional = true;
+      pManager.AddParameter(new Parameters.BcEntity(), "BuildingElement", "BE", "Building element to extract properties names from.", GH_ParamAccess.item);
+      pManager[pManager.AddParameter(new Parameters.PropCategory(), "PropCategory", "C", "Property category.", GH_ParamAccess.item)].Optional = true;
     }
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
@@ -87,9 +91,9 @@ namespace GH_BC
     protected override Bitmap Icon => Properties.Resources.propertyvalue;
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      pManager.AddParameter(new BcEntity(), "BuildingElement", "BE", "Building element to extract property value from.", GH_ParamAccess.item);
+      pManager.AddParameter(new Parameters.BcEntity(), "BuildingElement", "BE", "Building element to extract property value from.", GH_ParamAccess.item);
       pManager.AddTextParameter("PropName", "N", "Property name", GH_ParamAccess.item);
-      pManager.AddParameter(new PropCategory(), "PropCategory", "C", "Property category.", GH_ParamAccess.item);
+      pManager.AddParameter(new Parameters.PropCategory(), "PropCategory", "C", "Property category.", GH_ParamAccess.item);
     }
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
@@ -134,10 +138,10 @@ namespace GH_BC
     protected override Bitmap Icon => Properties.Resources.setproperty;
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      pManager.AddParameter(new BcEntity(), "BuildingElement", "BE", "Building element to set property for.", GH_ParamAccess.item);
+      pManager.AddParameter(new Parameters.BcEntity(), "BuildingElement", "BE", "Building element to set property for.", GH_ParamAccess.item);
       pManager.AddTextParameter("PropName", "N", "Property name.", GH_ParamAccess.item);
       pManager.AddGenericParameter("PropVal", "V", "Value to set.", GH_ParamAccess.item);
-      pManager.AddParameter(new PropCategory(), "PropCategory", "C", "Property category.", GH_ParamAccess.item);
+      pManager.AddParameter(new Parameters.PropCategory(), "PropCategory", "C", "Property category.", GH_ParamAccess.item);
     }
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {

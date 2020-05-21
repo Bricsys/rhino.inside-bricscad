@@ -6,8 +6,9 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System;
+using GH_BC.UI;
 
-namespace GH_BC
+namespace GH_BC.Parameters
 {
   public class Profile : GH_Param<Types.Profile>
   {
@@ -17,7 +18,7 @@ namespace GH_BC
     public override Guid ComponentGuid => new Guid("E6C7786A-AE55-468D-A4E2-1D65958CAA1C");
     public override GH_Exposure Exposure => GH_Exposure.hidden;
   }
-  
+
   public class ProfileName : GH_ValueList
   {
     public ProfileName()
@@ -62,7 +63,10 @@ namespace GH_BC
       base.CollectVolatileData_Custom();
     }
   }
+}
 
+namespace GH_BC.Components
+{
   public class ProfileSizes : GH_Component
   {
     public ProfileSizes() : base("Profile Sizes", "PS", "Returns all the sizes attached to the input profile.", "BricsCAD", GhUI.BimData)
@@ -84,7 +88,7 @@ namespace GH_BC
       if (!DA.GetData("ProfileName", ref profileName))
         return;
 
-      var db = PlugIn.LinkedDocument.Database;
+      var db = GhDrawingContext.LinkedDocument.Database;
       var profileTypes = Enum.GetValues(typeof(Bricscad.Bim.ProfileType));
       var profileSizes = new List<string>();
       foreach (var standard in Bricscad.Bim.BIMProfile.GetAllProfileStandards(null))
@@ -115,7 +119,7 @@ namespace GH_BC
     }
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
-      pManager.AddParameter(new Profile(), "Profile", "P", "Library profile", GH_ParamAccess.list);
+      pManager.AddParameter(new Parameters.Profile(), "Profile", "P", "Library profile", GH_ParamAccess.list);
     }
     protected override void SolveInstance(IGH_DataAccess DA)
     {
@@ -140,7 +144,7 @@ namespace GH_BC
       }
       else
       {
-        var libProfiles = Bricscad.Bim.BIMProfile.GetAllLibraryProfiles(PlugIn.LinkedDocument.Database);
+        var libProfiles = Bricscad.Bim.BIMProfile.GetAllLibraryProfiles(GhDrawingContext.LinkedDocument.Database);
         var res = libProfiles.Where(profile => (profileName != null ? profile.GetName == profileName : true)
                                             && (profileSize != null ? profile.GetShape == profileSize : true))
                              .Select(profile => new Types.Profile(profile));
@@ -158,7 +162,7 @@ namespace GH_BC
     protected override Bitmap Icon => Properties.Resources.profileinfo;
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      pManager.AddParameter(new Profile(), "Profile", "P", "Library profile", GH_ParamAccess.item);
+      pManager.AddParameter(new Parameters.Profile(), "Profile", "P", "Library profile", GH_ParamAccess.item);
     }
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)

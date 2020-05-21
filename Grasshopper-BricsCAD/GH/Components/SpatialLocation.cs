@@ -6,8 +6,9 @@ using System.Drawing;
 using System.Linq;
 using System;
 using Teigha.DatabaseServices;
+using GH_BC.UI;
 
-namespace GH_BC
+namespace GH_BC.Parameters
 {
   public class SpatialLocation : GH_Param<Types.SpatialLocation>
   {
@@ -73,9 +74,9 @@ namespace GH_BC
       var selectedItems = ListItems.Where(x => x.Selected).Select(x => x.Expression).ToList();
       ListItems.Clear();
 
-      if (PlugIn.LinkedDocument.Database != null)
+      if (GhDrawingContext.LinkedDocument.Database != null)
       {
-        var allStory = Bricscad.Bim.BIMBuilding.AllObjectBuildings(PlugIn.LinkedDocument.Database);
+        var allStory = Bricscad.Bim.BIMBuilding.AllObjectBuildings(GhDrawingContext.LinkedDocument.Database);
         allStory.ForEach(building =>
         {
           var item = new GH_ValueListItem(building.Name, "\"" + building.Name + "\"");
@@ -98,8 +99,11 @@ namespace GH_BC
                                  ICollection<Handle> added,
                                  ICollection<string> finishedCmds) => finishedCmds.Contains("BIMSPATIALLOCATIONS");
   }
-    
-  public class BuildingStories : GH_Component, IGH_BcComponent
+}
+
+namespace GH_BC.Components
+{
+    public class BuildingStories : GH_Component, IGH_BcComponent
   {
     public BuildingStories() : base("Stories", "ST", "Returns all the stories attached to the input building.", "BricsCAD", GhUI.BimData)
     { }
@@ -108,11 +112,11 @@ namespace GH_BC
     protected override Bitmap Icon => Properties.Resources.story;
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      pManager.AddParameter(new SpatialLocation(), "Building", "Building", "Building", GH_ParamAccess.item);
+      pManager.AddParameter(new Parameters.SpatialLocation(), "Building", "Building", "Building", GH_ParamAccess.item);
     }
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
-      pManager.AddParameter(new SpatialLocation(), "Story", "Story", "Story", GH_ParamAccess.list);
+      pManager.AddParameter(new Parameters.SpatialLocation(), "Story", "Story", "Story", GH_ParamAccess.list);
     }
     protected override void SolveInstance(IGH_DataAccess DA)
     {
@@ -120,7 +124,7 @@ namespace GH_BC
       if (!DA.GetData("Building", ref building))
         return;
 
-      var stories = Bricscad.Bim.BIMBuilding.AllObjectStories(PlugIn.LinkedDocument.Database, building.Value.Name)
+      var stories = Bricscad.Bim.BIMBuilding.AllObjectStories(GhDrawingContext.LinkedDocument.Database, building.Value.Name)
                                             .Select(story => new Types.SpatialLocation(story)).ToList();
       if (stories.Count != 0)
         DA.SetDataList("Story", stories);

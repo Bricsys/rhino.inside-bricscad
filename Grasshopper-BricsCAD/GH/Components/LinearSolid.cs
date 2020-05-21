@@ -3,11 +3,11 @@ using Rhino.Geometry;
 using System.Collections.Generic;
 using System;
 
-namespace GH_BC
+namespace GH_BC.Components
 {  
   public class LinearSolidComponent : GH_Component
   {
-    public LinearSolidComponent() : base("Linear Solid Info", "LS", "Returns information (axis, extrusion path and profile curves) about a linear solid present in the BricsCAD drawing.", "BricsCAD", GhUI.Information)
+    public LinearSolidComponent() : base("Linear Solid Info", "LS", "Returns information (axis, extrusion path and profile curves) about a linear solid present in the BricsCAD drawing.", "BricsCAD", UI.GhUI.Information)
     {}
     public override Guid ComponentGuid => new Guid("FAFCBABF-A270-4D42-AEC5-1C508CC004A9");
     public override GH_Exposure Exposure => GH_Exposure.tertiary;
@@ -16,7 +16,7 @@ namespace GH_BC
     protected override System.Drawing.Bitmap Icon => Properties.Resources.linearsolid;
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      pManager.AddParameter(new BcEntity(), "BuildingElement", "BE", "Building element to analyze", GH_ParamAccess.item);
+      pManager.AddParameter(new Parameters.BcEntity(), "BuildingElement", "BE", "Building element to analyze", GH_ParamAccess.item);
     }
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {

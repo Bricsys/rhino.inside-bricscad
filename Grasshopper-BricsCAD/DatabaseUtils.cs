@@ -1,19 +1,23 @@
 using System.Collections.Generic;
 using System.Linq;
+using Bricscad.ApplicationServices;
 using Teigha.DatabaseServices;
+using Teigha.GraphicsInterface;
 
 namespace GH_BC
 {
   public static class DatabaseUtils
   {
-    public static readonly string Wirframe = "Wireframe";
-    public static readonly string Realistic = "Realistic";
+    public const string Wirframe = "Wireframe";
+    public const string Realistic = "Realistic";
     public static ObjectId VisualStyleId(Database database, string visualStyleName)
     {
-      var dictionary = database.VisualStyleDictionaryId.GetObject(OpenMode.ForRead) as DBDictionary;
-      var res = dictionary?.GetAt(visualStyleName) ?? ObjectId.Null;
-      dictionary?.Dispose();
-      return res;
+      using (var dictionary = database.VisualStyleDictionaryId.GetObject(OpenMode.ForRead) as DBDictionary)
+      {
+        var res = dictionary?.GetAt(visualStyleName) ?? ObjectId.Null;
+        dictionary?.Dispose();
+        return res;
+      }
     }
     public static bool IsNullObjectLink(this FullSubentityPath fsp)
     {
@@ -27,6 +31,10 @@ namespace GH_BC
     {
       var objIds = fsp.GetObjectIds();
       return (objIds != null && objIds.Length > 0) ? objIds[0] : ObjectId.Null;
+    }
+    public static FullSubentityPath ToFsp(this ObjectId id)
+    {
+      return new FullSubentityPath(new ObjectId[] { id }, new SubentityId());
     }
     public static bool IsSubentity(SubentityType subentType)
     {
@@ -152,7 +160,24 @@ namespace GH_BC
       }
       return string.Empty;
     }
-    public static bool isCurve(ObjectId id)
+    public static bool IsCurve(ObjectId id)
       => id.ObjectClass.IsDerivedFrom(Teigha.Runtime.RXObject.GetClass(typeof(Curve)));
+    public static Document FindDocument(Database db)
+    {
+      foreach (Document doc in Application.DocumentManager)
+      {
+        if (doc.Database == db)
+          return doc;
+      }
+      return null;
+    }
+    public static TransientManager TransientGraphicsManager(this Document doc)
+    {
+      var savedWorkingDb = HostApplicationServices.WorkingDatabase;
+      HostApplicationServices.WorkingDatabase = doc.Database;
+      var transientManager = TransientManager.CurrentTransientManager;
+      HostApplicationServices.WorkingDatabase = savedWorkingDb;
+      return transientManager;
+    }
   }
 }

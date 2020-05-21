@@ -4,12 +4,12 @@ using System.Collections.Generic;
 using System;
 using _OdDb = Teigha.DatabaseServices;
 
-namespace GH_BC
+namespace GH_BC.Components
 {
   public class BuildingElement : BakeComponent
   {
     public BuildingElement()
-      : base("Bake Building Element", "BBE", "Bake the Grasshopper geometry into the current BricsCAD drawing, while adding BIM data to it. The output of Bake Building Element is a reference to the baked building element with BIM data.", "BricsCAD", GhUI.BuildingElements)
+      : base("Bake Building Element", "BBE", "Bake the Grasshopper geometry into the current BricsCAD drawing, while adding BIM data to it. The output of Bake Building Element is a reference to the baked building element with BIM data.", "BricsCAD", UI.GhUI.BuildingElements)
     { }
     public override Guid ComponentGuid => new Guid("6AEC3494-C94A-4FC7-BD4C-427F5B20BC59");
     public override GH_Exposure Exposure => GH_Exposure.primary;
@@ -17,13 +17,13 @@ namespace GH_BC
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
       pManager.AddGeometryParameter("Geometry", "G", "Geometry to bake into BricsCAD", GH_ParamAccess.item);
-      pManager[pManager.AddParameter(new ElementType(), "ElementType", "T", "Element Type", GH_ParamAccess.item)].Optional = true;
-      pManager[pManager.AddParameter(new SpatialLocation(), "SpatialLocation", "SL", "Spatial location", GH_ParamAccess.item)].Optional = true;
-      pManager[pManager.AddParameter(new Profile(), "Profile", "P", "Assigned profile", GH_ParamAccess.item)].Optional = true;
+      pManager[pManager.AddParameter(new Parameters.ElementType(), "ElementType", "T", "Element Type", GH_ParamAccess.item)].Optional = true;
+      pManager[pManager.AddParameter(new Parameters.SpatialLocation(), "SpatialLocation", "SL", "Spatial location", GH_ParamAccess.item)].Optional = true;
+      pManager[pManager.AddParameter(new Parameters.Profile(), "Profile", "P", "Assigned profile", GH_ParamAccess.item)].Optional = true;
     }
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
-      pManager.AddParameter(new BcEntity(), "BuildingElement", "BE", "Building element.", GH_ParamAccess.item);
+      pManager.AddParameter(new Parameters.BcEntity(), "BuildingElement", "BE", "Building element.", GH_ParamAccess.item);
     }
     protected override void AfterSolveInstance()
     {
@@ -32,7 +32,7 @@ namespace GH_BC
     }
     protected override void SolveInstance(IGH_DataAccess DA)
     {
-      if (!_needBake || !PlugIn.LinkedDocument.IsActive)
+      if (!_needBake || !GhDrawingContext.LinkedDocument.IsActive)
         return;
 
       /*Extract input parameters*/
@@ -59,7 +59,7 @@ namespace GH_BC
       if (DA.GetData("Profile", ref profile))
       {
         var dummy = new Bricscad.Bim.BIMProfile(profile.Value);
-        if (dummy.SaveProfile(PlugIn.LinkedDocument.Database) == Bricscad.Bim.BimResStatus.Ok)
+        if (dummy.SaveProfile(GhDrawingContext.LinkedDocument.Database) == Bricscad.Bim.BimResStatus.Ok)
         {
           bimProfile = dummy;
         }
@@ -67,7 +67,7 @@ namespace GH_BC
 
       var createdProfileId = _OdDb.ObjectId.Null;
       _OdDb.ObjectEventHandler objAppended = (s, e) => createdProfileId = e.DBObject.ObjectId;
-      PlugIn.LinkedDocument.Database.ObjectAppended += objAppended;
+      GhDrawingContext.LinkedDocument.Database.ObjectAppended += objAppended;
       var curvesToDelete = new _OdDb.ObjectIdCollection();
       for (int i = 0; i < objIds.Count; ++i)
       {
@@ -76,7 +76,7 @@ namespace GH_BC
         Bricscad.Bim.BIMClassification.ClassifyAs(id, elementType);
         bimProfile?.ApplyProfileTo(id, 0, true);
         //replace curve with created solid profile
-        if (DatabaseUtils.isCurve(id) && !createdProfileId.IsNull)
+        if (DatabaseUtils.IsCurve(id) && !createdProfileId.IsNull)
         {
           curvesToDelete.Add(id);
           objIds[i] = createdProfileId;
@@ -84,17 +84,19 @@ namespace GH_BC
         }
       }
       DatabaseUtils.EraseObjects(curvesToDelete);
-      PlugIn.LinkedDocument.Database.ObjectAppended -= objAppended;
+      GhDrawingContext.LinkedDocument.Database.ObjectAppended -= objAppended;
       var res = new List<Types.BcEntity>();
       foreach (_OdDb.ObjectId objId in objIds)
         DA.SetData("BuildingElement",
-          new Types.BcEntity(new _OdDb.FullSubentityPath(new _OdDb.ObjectId[] { objId }, new _OdDb.SubentityId()), PlugIn.LinkedDocument.Name));
+          new Types.BcEntity(new _OdDb.FullSubentityPath(new _OdDb.ObjectId[] { objId }, new _OdDb.SubentityId()), GhDrawingContext.LinkedDocument.Name));
     }
     public _OdDb.ObjectIdCollection BakeGhGeometry(IGH_GeometricGoo gg)
     {
-      var tmpFile = new Rhino.FileIO.File3dm();
-      AddGeometry(tmpFile, gg);
-      return BakeGhGeometry(tmpFile);
+      using (var tmpFile = new Rhino.FileIO.File3dm())
+      {
+        AddGeometry(tmpFile, gg);
+        return BakeGhGeometry(tmpFile);
+      }
     }
   }
 }
