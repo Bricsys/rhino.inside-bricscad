@@ -16,12 +16,12 @@ The latest installer can be found at [BricsCAD Application Store](https://www.br
 * .NET Framework 4.5.1 ([download](https://dotnet.microsoft.com/download/visual-studio-sdks))
 * Rhino WIP ([download](https://www.rhino3d.com/download/rhino/wip))
 * BricsCAD V20 ([download](https://www.bricsys.com/common/download.jsp))
-* [BRX](https://www.bricsys.com/bricscad/help/en_US/CurVer/DevRef/source/BRX_01.htm) (optional)
+* Download [BRX](https://www.bricsys.com/bricscad/help/en_US/CurVer/DevRef/source/BRX_01.htm) library and set *BRX_SDK_PATH* system variable (optional, nessesary for *GrasshopperData* and *GrasshopperDataManaged* build)
 
 ### Getting Source & Build
 1. Clone the repository.
 2. In Visual Studio: open Grasshopper-BricsCAD-Connection.sln.
-3. Update path to BricsCAD and Rhino references. _Copy Local_ property should be False.
+3. Update path to BricsCAD and Rhino references. _Copy Local_ property should be False. If there is no necessity to build *GrasshopperData* and *GrasshopperDataManaged* projects, you can use prebuild binaries [GhDataApp.dll](https://github.com/Bricsys/rhino.inside-bricscad/blob/master/GrasshopperData/prebuild/GhDataApp.dll) and [GhDataManaged.dll](https://github.com/Bricsys/rhino.inside-bricscad/blob/master/GrasshopperDataManaged/prebuild/GhDataManaged.dll).
 4. Navigate to _Build_ > _Build Solution_ to begin your build.
 
 ### Launch
