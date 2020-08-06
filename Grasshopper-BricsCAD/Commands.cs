@@ -27,19 +27,18 @@ namespace GH_BC
     [CommandMethod("Grasshopper")]
     public static void StartGrasshopper()
     {
-      Rhinoceros.LoadGrasshopperComponents();
-      var ghDocEditor = Grasshopper.Instances.DocumentEditor;
-      if (ghDocEditor == null || !ghDocEditor.Visible)
+      if (Rhinoceros.Script.IsEditorVisible())
+        Rhinoceros.Script.HideEditor();
+      else
       {
         if (System.Convert.ToInt16(Application.GetSystemVariable("DWGTITLED")) == 0)
         {
           _WF.MessageBox.Show("Bricscad drawing must be saved before using Grasshopper");
           return;
         }
-      }
-      Rhino.RhinoApp.RunScript("!_-Grasshopper _W _T ENTER", false);
-      if (Grasshopper.Instances.DocumentEditor.Visible)
+        Rhinoceros.Script.ShowEditor();
         GhDrawingContext.RelinkToDoc(Application.DocumentManager.MdiActiveDocument);
+      }
       UI.GhUI.CustomizeUI();
     }
 

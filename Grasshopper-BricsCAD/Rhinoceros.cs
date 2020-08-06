@@ -16,6 +16,7 @@ namespace GH_BC
       @"HKEY_LOCAL_MACHINE\SOFTWARE\McNeel\Rhinoceros\7.0\Install", "Path",
       Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Rhino WIP", "System")
     );
+    public static Grasshopper.Plugin.GH_RhinoScriptInterface Script { get; private set; }
 
     static Rhinoceros()
     {
@@ -78,8 +79,9 @@ namespace GH_BC
           return false;
         }
 
-        ResetDocumentUnits(Rhino.RhinoDoc.ActiveDoc, Application.DocumentManager.MdiActiveDocument);
-        Rhino.RhinoDoc.NewDocument += OnNewRhinoDocument;
+        ResetDocumentUnits(RhinoDoc.ActiveDoc, Application.DocumentManager.MdiActiveDocument);
+        RhinoDoc.NewDocument += OnNewRhinoDocument;
+        Script = new Grasshopper.Plugin.GH_RhinoScriptInterface();
       }
       return true;
     }
@@ -123,7 +125,9 @@ namespace GH_BC
         Grasshopper.Kernel.GH_ComponentServer.UpdateRibbonUI();
 
       var GrasshopperGuid = new Guid(0xB45A29B1, 0x4343, 0x4035, 0x98, 0x9E, 0x04, 0x4E, 0x85, 0x80, 0xD9, 0xCF);
-      Rhino.PlugIns.PlugIn.LoadPlugIn(GrasshopperGuid);
+      rc = Rhino.PlugIns.PlugIn.LoadPlugIn(GrasshopperGuid);
+      Script.LoadEditor();
+      rc = Script.IsEditorLoaded();
       _grasshopperLoaded = true;
       return rc;
     }
