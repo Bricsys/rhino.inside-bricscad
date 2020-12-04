@@ -40,8 +40,8 @@ namespace GH_BC.UI
       return true;
     }
     #endregion
-    public bool Register() => new QuadReactorManager().addQuadReactor(this);
-    public bool Unregister() => new QuadReactorManager().removeQuadReactor(this);
+    public bool Register() => QuadReactor.registerQuadReactor(this);
+    public bool Unregister() => QuadReactor.unregisterQuadReactor(this);
     private bool HasGhDataAttached(ObjectId id)
     {
       using (var ent = id.GetObject(OpenMode.ForRead) as Entity)

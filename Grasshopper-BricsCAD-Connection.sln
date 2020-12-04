@@ -4,8 +4,18 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 15.0.28010.2046
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Grasshopper-BricsCAD-Connection", "Grasshopper-BricsCAD\Grasshopper-BricsCAD-Connection.csproj", "{C7D33E00-54F4-4D35-8AA8-9BCBF5F3AD6A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{F2C7ECB8-7CD9-4FBE-83AD-9C47E635A33D} = {F2C7ECB8-7CD9-4FBE-83AD-9C47E635A33D}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Grasshopper-BricsCAD-Connection.UI", "Grasshopper-BricsCAD-UI\Grasshopper-BricsCAD-Connection.UI.csproj", "{0031417E-985C-47E8-BEF2-B4113ACD5D53}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GhDataManaged", "GrasshopperDataManaged\GhDataManaged.vcxproj", "{F2C7ECB8-7CD9-4FBE-83AD-9C47E635A33D}"
+	ProjectSection(ProjectDependencies) = postProject
+		{58D683A7-4F94-4386-B5AB-36B7B91103B8} = {58D683A7-4F94-4386-B5AB-36B7B91103B8}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GhDataApp", "GrasshopperData\GhDataApp.vcxproj", "{58D683A7-4F94-4386-B5AB-36B7B91103B8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +31,14 @@ Global
 		{0031417E-985C-47E8-BEF2-B4113ACD5D53}.Debug|x64.Build.0 = Debug|x64
 		{0031417E-985C-47E8-BEF2-B4113ACD5D53}.Release|x64.ActiveCfg = Release|x64
 		{0031417E-985C-47E8-BEF2-B4113ACD5D53}.Release|x64.Build.0 = Release|x64
+		{F2C7ECB8-7CD9-4FBE-83AD-9C47E635A33D}.Debug|x64.ActiveCfg = Debug|x64
+		{F2C7ECB8-7CD9-4FBE-83AD-9C47E635A33D}.Debug|x64.Build.0 = Debug|x64
+		{F2C7ECB8-7CD9-4FBE-83AD-9C47E635A33D}.Release|x64.ActiveCfg = Release|x64
+		{F2C7ECB8-7CD9-4FBE-83AD-9C47E635A33D}.Release|x64.Build.0 = Release|x64
+		{58D683A7-4F94-4386-B5AB-36B7B91103B8}.Debug|x64.ActiveCfg = Debug|x64
+		{58D683A7-4F94-4386-B5AB-36B7B91103B8}.Debug|x64.Build.0 = Debug|x64
+		{58D683A7-4F94-4386-B5AB-36B7B91103B8}.Release|x64.ActiveCfg = Release|x64
+		{58D683A7-4F94-4386-B5AB-36B7B91103B8}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
