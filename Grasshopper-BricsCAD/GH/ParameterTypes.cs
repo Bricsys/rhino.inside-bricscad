@@ -68,11 +68,13 @@ namespace GH_BC.Types
       Rhino.Geometry.GeometryBase geom = null;
       if (Value.IsSubentity())
       {
-        var entity = ObjectId.GetObject(OpenMode.ForRead) as Entity;
-        var subent = entity?.GetSubentity(Value);
-        geom = subent?.ToRhino();
-        subent?.Dispose();
-        entity?.Dispose();
+        using (var entity = ObjectId.GetObject(OpenMode.ForRead) as Entity)
+        {
+          using (var subent = entity?.GetSubentity(Value))
+          {
+            geom = subent?.ToRhino();
+          }
+        }
       }
       else
         geom = ObjectId.ToRhino();

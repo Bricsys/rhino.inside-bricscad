@@ -17,47 +17,51 @@ namespace GH_BC
 
       var inputs = GetInputParams(definition);
       var hostEntityId = ghData.HostEntity;
-      foreach (var input in inputs)
+      try
       {
-        if (!IsInputName(input.NickName))
-          continue;
-
-        if (input is Parameters.BcEntity)
+        foreach (var input in inputs)
         {
-          input.ClearData();
-          var data = new Types.BcEntity(hostEntityId.ToFsp(), bcDoc.Name);
-          input.AddVolatileData(new Grasshopper.Kernel.Data.GH_Path(0), 0, data);
-          data.LoadGeometry(bcDoc);
-          continue;
-        }
+          if (!IsInputName(input.NickName))
+            continue;
 
-        var prop = ghData.GetProperty(FormatName(input.NickName));
-        if (prop == null)
-          continue;
+          if (input is Parameters.BcEntity)
+          {
+            input.ClearData();
+            var data = new Types.BcEntity(hostEntityId.ToFsp(), bcDoc.Name);
+            input.AddVolatileData(new Grasshopper.Kernel.Data.GH_Path(0), 0, data);
+            data.LoadGeometry(bcDoc);
+            continue;
+          }
 
-        input.VolatileData.ClearData();
-        switch (prop)
-        {
-          case int intValue:
-          case double doubleValue:
-          case bool boolValue:
-          case string strValue:
-            input.AddVolatileData(new Grasshopper.Kernel.Data.GH_Path(0), 0, prop);
-            break;
-          case _OdGe.Point3d pntValue:
-            input.AddVolatileData(new Grasshopper.Kernel.Data.GH_Path(0), 0, pntValue.ToRhino());
-            break;
-          case _OdGe.Vector3d vecValue:
-            input.AddVolatileData(new Grasshopper.Kernel.Data.GH_Path(0), 0, vecValue.ToRhino());
-            break;
+          var prop = ghData.GetProperty(FormatName(input.NickName));
+          if (prop == null)
+            continue;
+
+          input.VolatileData.ClearData();
+          switch (prop)
+          {
+            case int intValue:
+            case double doubleValue:
+            case bool boolValue:
+            case string strValue:
+              input.AddVolatileData(new Grasshopper.Kernel.Data.GH_Path(0), 0, prop);
+              break;
+            case _OdGe.Point3d pntValue:
+              input.AddVolatileData(new Grasshopper.Kernel.Data.GH_Path(0), 0, pntValue.ToRhino());
+              break;
+            case _OdGe.Vector3d vecValue:
+              input.AddVolatileData(new Grasshopper.Kernel.Data.GH_Path(0), 0, vecValue.ToRhino());
+              break;
+          }
         }
+        definition.NewSolution(false, GH_SolutionMode.Silent);
+        Rhinoceros.Run();
+      }
+      finally
+      {
+        GH_Document.EnableSolutions = saveState;
       }
 
-      Rhino.RhinoApp.SetFocusToMainWindow();
-      definition.NewSolution(false, GH_SolutionMode.Silent);
-      Rhinoceros.Run();
-
-      GH_Document.EnableSolutions = saveState;
     }
     public static List<Tuple<string, object>> GetInputParametersValues(GH_Document definition)
     {

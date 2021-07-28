@@ -39,15 +39,17 @@ namespace GH_BC.Visualization
         {
           var database = id.Database;
           var docExt = GhBcConnection.GrasshopperDataExtension.GrasshopperDataManager(database);
-          var ghDrawable = docExt?.Drawable(id);
-          if (ghDrawable == null)
+          var ghDrawable = docExt?.GetGhDrawable(id);
+          if (ghDrawable == null || ghDrawable.IsDisposed)
             return base.WorldDraw(drawable, wd);
 
           bool needToDraw = false;
           using (var transaction = database.TransactionManager.StartTransaction())
           {
-            var ghData = transaction.GetObject(id, OpenMode.ForRead) as GrasshopperData;
-            needToDraw = ghData.IsVisible;
+            using (var ghData = transaction.GetObject(id, OpenMode.ForRead) as GrasshopperData)
+            {
+              needToDraw = ghData.IsVisible;
+            }
             transaction.Commit();
           }
           if(needToDraw)

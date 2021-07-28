@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -77,7 +77,7 @@
     <Compile Include="Convert.cs" />
     <Compile Include="DatabaseUtils.cs" />
     <Compile Include="GhBcConnection.cs" />
-    <Compile Include="GhDefintionManager.cs" />
+    <Compile Include="GhDefinitionManager.cs" />
     <Compile Include="GhDrawingContext.cs" />
     <Compile Include="GH\Components\BakeComponent.cs" />
     <Compile Include="GH\Components\BuildingElement.cs" />
@@ -111,6 +111,7 @@
     <Compile Include="UI\ModalForm.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="UI\WinAPI.cs" />
     <Compile Include="Visualization\CompoundDrawable.cs" />
     <Compile Include="Visualization\GhDataOverrule.cs" />
     <Compile Include="Visualization\GrasshopperPreview.cs" />

@@ -83,7 +83,8 @@ namespace GH_BC.Components
           createdProfileId = _OdDb.ObjectId.Null;
         }
       }
-      DatabaseUtils.EraseObjects(curvesToDelete);
+      if (profile != null)
+        DatabaseUtils.EraseObjects(curvesToDelete);
       GhDrawingContext.LinkedDocument.Database.ObjectAppended -= objAppended;
       var res = new List<Types.BcEntity>();
       foreach (_OdDb.ObjectId objId in objIds)

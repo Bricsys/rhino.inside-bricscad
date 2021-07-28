@@ -3,49 +3,12 @@ using System.Windows.Forms;
 using System.Runtime.InteropServices;
 
 using Rhino;
+using static GH_BC.UI.WinAPI;
 
 namespace GH_BC.UI
 {
   class ModalForm : System.Windows.Forms.Form
   {
-    [DllImport("USER32")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    internal static extern bool IsIconic(IntPtr hWnd);
-
-    [DllImport("USER32")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    internal static extern bool IsZoomed(IntPtr hWnd);
-
-    [DllImport("USER32", SetLastError = true)]
-    internal static extern IntPtr GetWindowLongPtr(IntPtr hWnd, int nIndex);
-
-    [DllImport("USER32", SetLastError = true)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    internal static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
-    internal static bool ShowWindow(IntPtr hWnd, bool bShow) => ShowWindow(hWnd, bShow ? 8 : 0);
-
-    [DllImport("USER32", SetLastError = true)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    internal static extern bool ShowOwnedPopups(IntPtr hWnd, [MarshalAs(UnmanagedType.Bool)] bool fShow);
-    internal static bool ShowOwnedPopups(bool fShow) => ShowOwnedPopups(RhinoApp.MainWindowHandle(), fShow);
-
-    [DllImport("USER32", SetLastError = true)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    internal static extern bool IsWindowEnabled(IntPtr hWnd);
-
-    [DllImport("USER32", SetLastError = true)]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    internal static extern bool EnableWindow(IntPtr hWnd, [MarshalAs(UnmanagedType.Bool)] bool bEnable);
-
-    [DllImport("USER32", SetLastError = true)]
-    internal static extern IntPtr GetWindow(IntPtr hWnd, int uCmd);
-    internal static IntPtr GetEnabledPopup() => GetWindow(RhinoApp.MainWindowHandle(), 6 /*GW_ENABLEDPOPUP*/);
-
-    [DllImport("USER32", SetLastError = true)]
-    internal static extern IntPtr SetActiveWindow(IntPtr hWnd);
-
-    [DllImport("USER32", SetLastError = true)]
-    internal static extern IntPtr BringWindowToTop(IntPtr hWnd);
     public static IntPtr MWHBricscad => Bricscad.ApplicationServices.Application.MainWindow.Handle;
     class BricsadMainWindow : IWin32Window { IntPtr IWin32Window.Handle => MWHBricscad; }
     public static IWin32Window OwnerWindow = new BricsadMainWindow();

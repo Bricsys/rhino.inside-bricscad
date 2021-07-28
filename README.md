@@ -1,6 +1,6 @@
 # Grasshopper-BricsCAD Connection
 Grasshopper-BricsCAD Connection is a plugin based on the [Rhino.Inside](https://github.com/mcneel/rhino.inside) technology.
-It provides a bi-directional connection between Grasshopper and BricsCAD. BricsCAD geometry can be used as input parameters in Grasshopper, as well as Grasshopper geometry can be converted back to native BricsCAD geometry.
+It provides a bi-directional connection between Grasshopper and BricsCAD. BricsCAD geometry can be used as input parameters in Grasshopper, and Grasshopper geometry can be converted back to native BricsCAD geometry.
 For additional information and documentation see [BricsCAD Help Center](https://help.bricsys.com/hc/en-us/articles/360025542454-Rhino-Grasshopper-Integration).
 The latest installer can be found at [BricsCAD Application Store](https://www.bricsys.com/applications/a/?rhino/grasshopper-connection-for-bricscad-bim-a1353-al2360)
 
@@ -12,7 +12,7 @@ The latest installer can be found at [BricsCAD Application Store](https://www.br
 ### Prerequisites
 * Visual Studio ([download](https://visualstudio.microsoft.com/downloads/))
 * .NET Framework 4.5.1 ([download](https://dotnet.microsoft.com/download/visual-studio-sdks))
-* Rhino WIP ([download](https://www.rhino3d.com/download/rhino/wip))
+* Rhino 7 ([download](https://www.rhino3d.com/download/rhino/7/latest))
 * BricsCAD V21 ([download](https://www.bricsys.com/common/download.jsp))
 
 ### Getting Source & Build

@@ -14,7 +14,7 @@ namespace GH_BC
     static readonly string _rhinoPath = (string) Microsoft.Win32.Registry.GetValue
     (
       @"HKEY_LOCAL_MACHINE\SOFTWARE\McNeel\Rhinoceros\7.0\Install", "Path",
-      Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Rhino WIP", "System")
+      Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Rhino 7", "System") + "\\"
     );
     public static Grasshopper.Plugin.GH_RhinoScriptInterface Script { get; private set; }
 
@@ -62,8 +62,8 @@ namespace GH_BC
     }
     public static bool WindowVisible
     {
-      get => 0 != ((int) UI.ModalForm.GetWindowLongPtr(RhinoApp.MainWindowHandle(), -16 /*GWL_STYLE*/) & 0x10000000);
-      set => UI.ModalForm.ShowWindow(RhinoApp.MainWindowHandle(), value ? 8 /*SW_SHOWNA*/ : 0 /*SW_HIDE*/);
+      get => 0 != ((int) UI.WinAPI.GetWindowLongPtr(RhinoApp.MainWindowHandle(), -16 /*GWL_STYLE*/) & 0x10000000);
+      set => UI.WinAPI.ShowWindow(RhinoApp.MainWindowHandle(), value ? 8 /*SW_SHOWNA*/ : 0 /*SW_HIDE*/);
     }
     internal static bool Startup()
     {

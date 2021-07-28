@@ -12,7 +12,7 @@
 # Visual Studio 2015/2017 cache/options directory
 .vs/
 
-/Grasshopper-BricsCAD/bin
-/Grasshopper-BricsCAD-UI/bin
-/Grasshopper-BricsCAD-UI/obj
-/Grasshopper-BricsCAD/obj
+*/bin
+*/obj
+*/lib
+*/build

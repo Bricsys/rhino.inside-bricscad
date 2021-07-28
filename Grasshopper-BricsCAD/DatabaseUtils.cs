@@ -15,7 +15,6 @@ namespace GH_BC
       using (var dictionary = database.VisualStyleDictionaryId.GetObject(OpenMode.ForRead) as DBDictionary)
       {
         var res = dictionary?.GetAt(visualStyleName) ?? ObjectId.Null;
-        dictionary?.Dispose();
         return res;
       }
     }
@@ -67,12 +66,16 @@ namespace GH_BC
 
       using (var transaction = database.TransactionManager.StartTransaction())
       {
-        var blockTable = transaction.GetObject(database.BlockTableId, OpenMode.ForRead) as BlockTable;
-        var blockTableRecord = transaction.GetObject(blockTable[BlockTableRecord.ModelSpace], OpenMode.ForWrite) as BlockTableRecord;
-        foreach (var ent in objects.OfType<Entity>())
+        using (var blockTable = transaction.GetObject(database.BlockTableId, OpenMode.ForRead) as BlockTable)
         {
-          objIds.Add(blockTableRecord.AppendEntity(ent));
-          transaction.AddNewlyCreatedDBObject(ent, true);
+          using (var blockTableRecord = transaction.GetObject(blockTable[BlockTableRecord.ModelSpace], OpenMode.ForWrite) as BlockTableRecord)
+          {
+            foreach (var ent in objects.OfType<Entity>())
+            {
+              objIds.Add(blockTableRecord.AppendEntity(ent));
+              transaction.AddNewlyCreatedDBObject(ent, true);
+            }
+          }
         }
         transaction.Commit();
       }
@@ -87,8 +90,10 @@ namespace GH_BC
       {
         foreach (ObjectId id in aId)
         {
-          var entity = transaction.GetObject(id, OpenMode.ForWrite) as Entity;
-          entity.Erase(true);
+          using (var entity = transaction.GetObject(id, OpenMode.ForWrite) as Entity)
+          {
+            entity.Erase(true);
+          }
         }
         transaction.Commit();
       }
@@ -98,11 +103,15 @@ namespace GH_BC
       var layers = new List<string>();
       using (Transaction tr = database.TransactionManager.StartOpenCloseTransaction())
       {
-        var layerTable = tr.GetObject(database.LayerTableId, OpenMode.ForRead) as LayerTable;
-        foreach (var layerId in layerTable)
+        using (var layerTable = tr.GetObject(database.LayerTableId, OpenMode.ForRead) as LayerTable)
         {
-          var layer = tr.GetObject(layerId, OpenMode.ForRead) as LayerTableRecord;
-          layers.Add(layer.Name);
+          foreach (var layerId in layerTable)
+          {
+            using (var layer = tr.GetObject(layerId, OpenMode.ForRead) as LayerTableRecord)
+            {
+              layers.Add(layer.Name);
+            }
+          }
         }
       }
       return layers;
@@ -112,11 +121,15 @@ namespace GH_BC
       var materials = new List<string>();
       using (Transaction tr = database.TransactionManager.StartOpenCloseTransaction())
       {
-        var materialDic = tr.GetObject(database.MaterialDictionaryId, OpenMode.ForRead) as DBDictionary;
-        foreach (var materialId in materialDic)
+        using (var materialDic = tr.GetObject(database.MaterialDictionaryId, OpenMode.ForRead) as DBDictionary)
         {
-          var material = tr.GetObject(materialId.Value, OpenMode.ForRead) as Material;
-          materials.Add(material.Name);
+          foreach (var materialId in materialDic)
+          {
+            using (var material = tr.GetObject(materialId.Value, OpenMode.ForRead) as Material)
+            {
+              materials.Add(material.Name);
+            }
+          }
         }
       }
       return materials;
@@ -127,25 +140,29 @@ namespace GH_BC
       if (!objId.IsValid || objId.IsNull || objId.IsErased)
         return;
 
-      var entity = objId.GetObject(OpenMode.ForWrite) as Entity;
-      if (entity != null)
+      using (var tx = objId.Database.TransactionManager.StartTransaction())
       {
-        if (IsSubentity(fsp))
+        using (var entity = objId.GetObject(OpenMode.ForWrite) as Entity)
         {
-          if (highlight)
-            entity.Highlight(fsp, true);
-          else
-            entity.Unhighlight(fsp, true);
-        }
-        else
-        {
-          if (highlight)
-            entity.Highlight();
-          else
-            entity.Unhighlight();
+          if (entity != null)
+          {
+            if (IsSubentity(fsp))
+            {
+              if (highlight)
+                entity.Highlight(fsp, true);
+              else
+                entity.Unhighlight(fsp, true);
+            }
+            else
+            {
+              if (highlight)
+                entity.Highlight();
+              else
+                entity.Unhighlight();
+            }
+          }
         }
       }
-      entity.Dispose();
     }
     public static string ToCategoryString(this Bricscad.Bim.BimCategory category)
     {

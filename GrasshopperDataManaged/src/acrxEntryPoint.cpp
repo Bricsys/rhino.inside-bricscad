@@ -26,7 +26,7 @@ public:
 
         acedArxLoad(GhDataApp_Path);
         RegisterManagedWrapperLink();
-        //acutPrintf(_T("\nRegistrated GhDataManaged.dll"));
+        //acutPrintf(_T("\nRegistered GhDataManaged.dll"));
         return retMsg;
     }
 

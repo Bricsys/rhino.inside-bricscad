@@ -169,22 +169,25 @@ namespace GH_BC.UI
     private void ColorButton_Click(object sender, EventArgs e)
     {
       var dialog = new Bricscad.Windows.ColorDialog();
-      dialog.ShowDialog();
-      Color = dialog.Color;
-      if (dialog.Color.IsByBlock)
+      var dialogResult = dialog.ShowDialog();
+      if (dialogResult == System.Windows.Forms.DialogResult.OK)
       {
-        ColorButton.Text = "ByBlock";
-        ColorButton.BackColor = System.Drawing.SystemColors.ButtonFace;
-      }
-      else if (dialog.Color.IsByLayer)
-      {
-        ColorButton.Text = "ByLayer";
-        ColorButton.BackColor = System.Drawing.SystemColors.ButtonFace;
-      }
-      else
-      {
-        ColorButton.Text = "";
-        ColorButton.BackColor = Color.ColorValue;
+        Color = dialog.Color;
+        if (dialog.Color.IsByBlock)
+        {
+          ColorButton.Text = "ByBlock";
+          ColorButton.BackColor = System.Drawing.SystemColors.ButtonFace;
+        }
+        else if (dialog.Color.IsByLayer)
+        {
+          ColorButton.Text = "ByLayer";
+          ColorButton.BackColor = System.Drawing.SystemColors.ButtonFace;
+        }
+        else
+        {
+          ColorButton.Text = "";
+          ColorButton.BackColor = Color.ColorValue;
+        }
       }
     }
 

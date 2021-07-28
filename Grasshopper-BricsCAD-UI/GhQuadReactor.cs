@@ -44,17 +44,20 @@ namespace GH_BC.UI
     public bool Unregister() => QuadReactor.unregisterQuadReactor(this);
     private bool HasGhDataAttached(ObjectId id)
     {
-      using (var ent = id.GetObject(OpenMode.ForRead) as Entity)
+      using (var tx = id.Database.TransactionManager.StartTransaction())
       {
-        if (ent == null)
-          return false;
-        var dictId = ent.ExtensionDictionary;
-        if (dictId.IsNull)
-          return false;
-
-        using (var dict = dictId.GetObject(OpenMode.ForRead) as DBDictionary)
+        using (var ent = id.GetObject(OpenMode.ForRead) as Entity)
         {
-          return dict.Contains("GrasshopperData");
+          if (ent == null)
+            return false;
+          var dictId = ent.ExtensionDictionary;
+          if (dictId.IsNull)
+            return false;
+
+          using (var dict = dictId.GetObject(OpenMode.ForRead) as DBDictionary)
+          {
+            return dict.Contains("GrasshopperData");
+          }
         }
       }
     }

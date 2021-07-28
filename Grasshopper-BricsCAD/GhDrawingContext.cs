@@ -91,7 +91,7 @@ namespace GH_BC
         return;
 
       if (e.Document != LinkedDocument)
-      { 
+      {
         _preview?.Dispose();
         _preview = null;
       }
@@ -104,6 +104,7 @@ namespace GH_BC
       _preview?.Dispose();
       _preview = null;
       LinkedDocument = null;
+      Rhinoceros.Script.HideEditor();
       ExpireGH();
     }
     #endregion

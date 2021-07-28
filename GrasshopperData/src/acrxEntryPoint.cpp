@@ -20,7 +20,7 @@ public:
         acrxRegisterAppMDIAware(pAppData); // is able to work in MDI context
         registerGhOPMExtension();
 #ifdef _DEBUG
-        acutPrintf(_T("\nRegistrated GhDataApp.dll"));
+        acutPrintf(_T("\nRegistered GhDataApp.dll"));
 #endif
         return result;
     }

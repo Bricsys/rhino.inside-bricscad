@@ -124,7 +124,7 @@ namespace GH_BC
     public static void AttachGhData()
     {
       var editor = Application.DocumentManager.MdiActiveDocument.Editor;
-      var database = editor.Document.Database;
+      var doc = editor.Document;
       var selection = editor.GetSelection();
       if (selection.Status != PromptStatus.OK)
         return;
@@ -148,22 +148,24 @@ namespace GH_BC
       if (string.IsNullOrEmpty(ghDef))
         return;
 
-      using (var transaction = database.TransactionManager.StartTransaction())
+      using (var transaction = doc.TransactionManager.StartTransaction())
       {
         for (int i = 0; i < selection.Value.Count; ++i)
         {
-          var ghData = new GrasshopperData(Path.GetFileName(ghDef))
+          using (var ghData = new GrasshopperData(Path.GetFileName(ghDef))
+            {
+              IsVisible = true
+            })
           {
-            IsVisible = true
-          };
-
-          var entity = transaction.GetObject(selection.Value[i].ObjectId, OpenMode.ForWrite) as Entity;
-          if (GrasshopperData.AttachGrasshopperData(entity, ghData))
-          {
-            var docExt = GhBcConnection.GrasshopperDataExtension.GrasshopperDataManager(Application.DocumentManager.MdiActiveDocument, true);
-            docExt.AddGrasshopperData(ghData);
+            using (var entity = transaction.GetObject(selection.Value[i].ObjectId, OpenMode.ForWrite) as Entity)
+            {
+              if (GrasshopperData.AttachGrasshopperData(entity, ghData))
+              {
+                var docExt = GhBcConnection.GrasshopperDataExtension.GrasshopperDataManager(Application.DocumentManager.MdiActiveDocument, true);
+                docExt.AddGrasshopperData(ghData);
+              }
+            }
           }
-          ghData.Dispose();
         }
         transaction.Commit();
       }
@@ -172,18 +174,20 @@ namespace GH_BC
     public static void ClearGhData()
     {
       var editor = Application.DocumentManager.MdiActiveDocument.Editor;
-      var database = editor.Document.Database;
+      var doc = editor.Document;
       var selection = editor.GetSelection();
       if (selection.Status != PromptStatus.OK)
         return;
 
-      using (var transaction = database.TransactionManager.StartTransaction())
+      using (var transaction = doc.TransactionManager.StartTransaction())
       {
         for (int i = 0; i < selection.Value.Count; ++i)
         {
-          var entity = transaction.GetObject(selection.Value[i].ObjectId, OpenMode.ForWrite) as Entity;
-          GrasshopperData.RemoveGrasshopperData(entity);
-          entity?.RecordGraphicsModified(true);
+          using (var entity = transaction.GetObject(selection.Value[i].ObjectId, OpenMode.ForWrite) as Entity)
+          {
+            GrasshopperData.RemoveGrasshopperData(entity);
+            entity?.RecordGraphicsModified(true);
+          }
         }
         transaction.Commit();
       }
@@ -196,16 +200,18 @@ namespace GH_BC
       if (selection.Status != PromptStatus.OK)
         return;
 
-      var database = editor.Document.Database;
+      var doc = editor.Document;
       var ghDataToBake = new List<ObjectId>();
-      using (var transaction = database.TransactionManager.StartTransaction())
+      using (var transaction = doc.TransactionManager.StartTransaction())
       {
         for (int i = 0; i < selection.Value.Count; ++i)
         {
-          var entity = transaction.GetObject(selection.Value[i].ObjectId, OpenMode.ForRead) as Entity;
-          var id = GrasshopperData.GetGrasshopperData(entity);
-          if (!id.IsNull)
-            ghDataToBake.Add(id);
+          using (var entity = transaction.GetObject(selection.Value[i].ObjectId, OpenMode.ForRead) as Entity)
+          {
+            var id = GrasshopperData.GetGrasshopperData(entity);
+            if (!id.IsNull)
+              ghDataToBake.Add(id);
+          }
         }
         transaction.Commit();
       }
@@ -225,6 +231,14 @@ namespace GH_BC
     {
       var dlg = new UI.GhDefinitionDialog();
       dlg.ShowDialog();
+    }
+    [CommandMethod("GhRegen", CommandFlags.Transparent)]
+    public static void GhRegen()
+    {
+      var activeDoc = Application.DocumentManager.MdiActiveDocument;
+      var docExt = GhBcConnection.GrasshopperDataExtension.GrasshopperDataManager(activeDoc);
+      if (docExt != null)
+        GhBcConnection.GrasshopperDataExtension.Update(docExt);
     }
   }
 }

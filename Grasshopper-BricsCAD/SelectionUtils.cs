@@ -131,20 +131,20 @@ namespace GH_BC
         if (selection.Status == PromptStatus.OK)
         {
           var fsp = selection.Value[0].GetSubentities()[0].FullSubentityPath;
-          var face = new Teigha.BoundaryRepresentation.Face(fsp);
-          if (face.Surface is Teigha.Geometry.ExternalBoundedSurface tdExtSur)
+          using (var face = new Teigha.BoundaryRepresentation.Face(fsp))
           {
-            if (tdExtSur.BaseSurface is Teigha.Geometry.Plane tdPlane)
+            if (face.Surface is Teigha.Geometry.ExternalBoundedSurface tdExtSur)
             {
-              plane = tdPlane.ToRhino();
-              face.Dispose();
-              break;
+              if (tdExtSur.BaseSurface is Teigha.Geometry.Plane tdPlane)
+              {
+                plane = tdPlane.ToRhino();
+                break;
+              }
             }
-          }
-          else
-          {
-            editor.WriteMessage("\nFace must be planar");
-            face.Dispose();
+            else
+            {
+              editor.WriteMessage("\nFace must be planar");
+            }
           }
         }
         else

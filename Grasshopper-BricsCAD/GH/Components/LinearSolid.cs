@@ -29,22 +29,26 @@ namespace GH_BC.Components
       Types.BcEntity bcEnt = null;
       if (!DA.GetData("BuildingElement", ref bcEnt))
         return;
-            
-      var geom = new Bricscad.Bim.BIMLinearGeometry(bcEnt.ObjectId);
-      if (geom != null)
+
+      using (var geom = new Bricscad.Bim.BIMLinearGeometry(bcEnt.ObjectId))
       {
-        var axis = geom.GetAxis();
-        var extrusionPath = geom.GetExtrusionPath();
-        var profileCurves = geom.GetProfile();
-        if(axis != null)
-          DA.SetData("Axis", axis.ToRhino());
-        if(extrusionPath != null)
-          DA.SetData("ExtrusionPath", extrusionPath.ToRhino());
-        if (profileCurves.Count != 0)
+        if (geom != null)
         {
-          var curves = new List<Curve>();
-          profileCurves.ForEach(loop => loop.ForEach(geCurve => curves.Add(geCurve.ToRhino())));
-          DA.SetDataList("ProfileCurves", curves);
+          var axis = geom.GetAxis();
+          using (var extrusionPath = geom.GetExtrusionPath())
+          {
+            var profileCurves = geom.GetProfile();
+            if (axis != null)
+              DA.SetData("Axis", axis.ToRhino());
+            if (extrusionPath != null)
+              DA.SetData("ExtrusionPath", extrusionPath.ToRhino());
+            if (profileCurves.Count != 0)
+            {
+              var curves = new List<Curve>();
+              profileCurves.ForEach(loop => loop.ForEach(geCurve => curves.Add(geCurve.ToRhino())));
+              DA.SetDataList("ProfileCurves", curves);
+            }
+          }
         }
       }
     }
