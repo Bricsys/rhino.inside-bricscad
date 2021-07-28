@@ -1,0 +1,18 @@
+﻿# MacOS
+.DS_Store
+
+### vs ###
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Visual Studio 2015/2017 cache/options directory
+.vs/
+
+/Grasshopper-BricsCAD/bin
+/Grasshopper-BricsCAD-UI/bin
+/Grasshopper-BricsCAD-UI/obj
+/Grasshopper-BricsCAD/obj
