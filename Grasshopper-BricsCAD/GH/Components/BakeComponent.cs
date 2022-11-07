@@ -25,7 +25,7 @@ namespace GH_BC.Components
     public BakeComponent()
       : base("Bake Geometry", "BG", "Bake the Grasshopper geometry into the current BricsCAD drawing, while disregarding the BIM data attached to it. The output of Bake Geometry is a reference to the baked building element without BIM data.", "BricsCAD", GhUI.BuildingElements)
     {}
-    public override Guid ComponentGuid => new Guid("B862BC45-8896-4B13-93C6-621D49F214ED");
+    public override Guid ComponentGuid => new Guid("8C42D2D7-16C5-4AFC-B6E0-6FC2696A1038");
     public override GH_Exposure Exposure => GH_Exposure.primary;
     public override bool IsPreviewCapable { get { return false; } }
     public override bool IsBakeCapable { get { return false; } }
@@ -33,6 +33,7 @@ namespace GH_BC.Components
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
       pManager.AddGeometryParameter("Geometry", "G", "Geometry to bake into BricsCAD", GH_ParamAccess.tree);
+      pManager[pManager.AddTextParameter("Material", "M", "Material to assign to the Geometry in BricsCAD (Overrides the Bake Dialog Material)", GH_ParamAccess.item)].Optional = true;
     }
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
@@ -43,6 +44,10 @@ namespace GH_BC.Components
       if (!_needBake || !GhDrawingContext.LinkedDocument.IsActive)
         return;
       _needBake = false;
+
+      string material = string.Empty;
+      if (DA.GetData("Material", ref material))
+        _material = material;
 
       var geometry = new GH_Structure<IGH_GeometricGoo>();
       if (!DA.GetDataTree("Geometry", out geometry))
@@ -160,6 +165,67 @@ namespace GH_BC.Components
       bakeComponent._layer = bakeProperties.Layer;
       bakeComponent._material = bakeProperties.Material;
       bakeComponent.ExpireSolution(false);
+    }
+  }
+
+  public class BakeComponent_OBSOLETE : BakeComponent
+  {
+    public BakeComponent_OBSOLETE() : base() { }
+    public override Guid ComponentGuid => new Guid("B862BC45-8896-4B13-93C6-621D49F214ED");
+    public override GH_Exposure Exposure => GH_Exposure.hidden;
+    public override bool Obsolete => true;
+    protected override void RegisterInputParams(GH_InputParamManager pManager)
+    {
+      pManager.AddGeometryParameter("Geometry", "G", "Geometry to bake into BricsCAD", GH_ParamAccess.tree);
+    }
+    protected override void SolveInstance(IGH_DataAccess DA)
+    {
+      if (!_needBake || !GhDrawingContext.LinkedDocument.IsActive)
+        return;
+      _needBake = false;
+
+      var geometry = new GH_Structure<IGH_GeometricGoo>();
+      if (!DA.GetDataTree("Geometry", out geometry))
+        return;
+
+      var objIds = BakeGhGeometry(geometry.AllData(true));
+      var res = new List<Types.BcEntity>();
+      foreach (_OdDb.ObjectId objId in objIds)
+        res.Add(new Types.BcEntity(new _OdDb.FullSubentityPath(new _OdDb.ObjectId[] { objId }, new _OdDb.SubentityId()), GhDrawingContext.LinkedDocument.Name));
+      DA.SetDataList("BuildingElement", res);
+    }
+  }
+
+  public class BakeComponentUpgrader : IGH_UpgradeObject
+  {
+    public BakeComponentUpgrader() { }
+    public DateTime Version
+    {
+      get { return new DateTime(2021, 8, 3, 17, 0, 0); }
+    }
+    public Guid UpgradeFrom
+    {
+      get { return new Guid("B862BC45-8896-4B13-93C6-621D49F214ED"); }
+    }
+    public Guid UpgradeTo
+    {
+      get { return new Guid("8C42D2D7-16C5-4AFC-B6E0-6FC2696A1038"); }
+    }
+
+    public IGH_DocumentObject Upgrade(IGH_DocumentObject target, GH_Document document)
+    {
+      IGH_Component newComponent = GH_UpgradeUtil.SwapComponents((IGH_Component) target, UpgradeTo, true);
+      if (newComponent == null) { return null; }
+
+      Grasshopper.Kernel.Parameters.Param_String param = new Grasshopper.Kernel.Parameters.Param_String();
+      param.NickName = "M";
+      param.Name = "Material";
+      param.Description = "Material to assign to the Geometry in BricsCAD (Overrides the Bake Dialog Material)";
+      param.Access = GH_ParamAccess.item;
+      param.Optional = true;
+
+      newComponent.Params.RegisterInputParam(param);
+      return newComponent;
     }
   }
 }

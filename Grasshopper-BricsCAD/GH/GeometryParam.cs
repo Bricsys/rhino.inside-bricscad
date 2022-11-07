@@ -42,6 +42,7 @@ namespace GH_BC.Parameters
     protected override Bitmap Icon => (Bitmap) Properties.Resources.ResourceManager.GetObject(GetType().Name.ToLower());
     protected virtual SubentityType SubentType { get { return SubentityType.Null; } }
     protected virtual SelectionFilter SelFilter { get { return null; } }
+    protected abstract X CreateParameter(FullSubentityPath fsp, string s);
     protected override GH_GetterResult Prompt_Plural(ref List<X> values)
     {
       var selected = SelectionUtils.SelectEntity(SubentType, SelFilter, true);
@@ -49,10 +50,12 @@ namespace GH_BC.Parameters
         return GH_GetterResult.cancel;
 
       var docName = Application.DocumentManager.MdiActiveDocument.Name;
-      values = selected.Select(subent => CreateParameter(subent, docName)).ToList();
+      values = selected.Select(subent => {
+        DatabaseUtils.Highlight(subent, true);
+        return CreateParameter(subent, docName);
+      }).ToList();
       return GH_GetterResult.success;
     }
-    protected abstract X CreateParameter(FullSubentityPath fsp, string s);
     protected override GH_GetterResult Prompt_Singular(ref X value)
     {
       var selected = SelectionUtils.SelectEntity(SubentType, SelFilter, false);
@@ -61,6 +64,7 @@ namespace GH_BC.Parameters
 
       var docName = Application.DocumentManager.MdiActiveDocument.Name;
       value = CreateParameter(selected[0], docName);
+      DatabaseUtils.Highlight(selected[0], true);
       return GH_GetterResult.success;
     }
     public override void AppendAdditionalMenuItems(System.Windows.Forms.ToolStripDropDown menu)
@@ -134,7 +138,42 @@ namespace GH_BC.Parameters
       }
       base.OnVolatileDataCollected();
     }
+    protected override void PrepareForPrompt()
+    {
+      base.PrepareForPrompt();
+      UnhighlightVolatileData();
+    }
+    public override void ClearData()
+    {
+      UnhighlightVolatileData();
+      base.ClearData();
+    }
+    private void UnhighlightVolatileData()
+    {
+      foreach (var bcRef in VolatileData.AllData(true).OfType<Types.IGH_BcGeometricGoo>())
+      {
+        DatabaseUtils.Highlight(bcRef.Reference, false);
+      }
+    }
+    public override void RemovedFromDocument(GH_Document document)
+    {
+      var id = ObjectId.Null;
+      if (GhDrawingContext.LinkedDocument == null || GhDrawingContext.LinkedDocument.Database == null)
+        return;
+
+      foreach (var bcRef in PersistentData.AllData(true).OfType<Types.IGH_BcGeometricGoo>())
+      {
+        
+        if ((bool) !GhDrawingContext.LinkedDocument.Database.TryGetObjectId(bcRef.PersistentRef, out id))
+          continue;
+
+        var subentId = new SubentityId(SubentType, bcRef.SubentIndex);
+        var fsp = new FullSubentityPath(new ObjectId[] { id }, subentId);
+        DatabaseUtils.Highlight(fsp, false);
+      }
+    }
   }
+
   public class Edge : GH_PersistentGeometryParam<Types.Edge>
   {
     public Edge()

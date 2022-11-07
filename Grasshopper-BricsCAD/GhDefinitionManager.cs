@@ -420,7 +420,7 @@ namespace GH_BC
         }
       }
     }
-    public static short HostTransparency => (short) _BcAp.Application.GetSystemVariable("GhHostTransparency");
+    public static short HostTransparency => System.Convert.ToInt16(255 - (short) _BcAp.Application.GetSystemVariable("GhHostTransparency") * 2.55);
     public override bool Set(string VarName, object VarValue) 
     {
       Changed?.Invoke(this, VarName);
@@ -430,7 +430,7 @@ namespace GH_BC
     {
       get
       {
-        short a = (short) _BcAp.Application.GetSystemVariable("GhTransparency");
+        short a = System.Convert.ToInt16(255 - (short) _BcAp.Application.GetSystemVariable("GhTransparency") * 2.55);
         int r = 0, g = 0, b = 0;
         var color = _BcAp.Application.GetSystemVariable("GhColor") as string;
 

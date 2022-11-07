@@ -35,8 +35,11 @@ namespace GH_BC.UI
     public override string GUID() => "5F6982C0-0E9A-490F-9A34-273B090E6EC9";
     public override bool registerQuadItems(QuadItemRegistry quadItemRegistry)
     {
-      quadItemRegistry.append("clearghdata", "ClearGhData", "ClearGhData.png", "^c^c_clearghdata", "Clear grasshopper data attached to selected object");
-      quadItemRegistry.append("bakeghdata", "BakeGhdata", "BakeGhData.png", "^c^c_bakeghdata", "Bake grasshopper data attached to selected object");
+      var executionLocation = System.Reflection.Assembly.GetExecutingAssembly().Location;
+      var clearGhDataIcon = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(executionLocation), "ClearGhData.png");
+      quadItemRegistry.append("clearghdata", "ClearGhData", clearGhDataIcon, "^c^c_clearghdata", "Clear grasshopper data attached to selected object"); 
+      var bakeGhDataIcon = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(executionLocation), "BakeGhData.png");
+      quadItemRegistry.append("bakeghdata", "BakeGhdata", bakeGhDataIcon, "^c^c_bakeghdata", "Bake grasshopper data attached to selected object");
       return true;
     }
     #endregion

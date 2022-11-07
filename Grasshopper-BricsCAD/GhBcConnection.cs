@@ -93,8 +93,8 @@ namespace GH_BC
     }
     private void OnQuitWillStart(object sender, EventArgs e)
     {
-      Grasshopper.Plugin.GH_PluginUtil.UnloadGrasshopper();
       Grasshopper.Plugin.GH_PluginUtil.SaveSettings();
+      Grasshopper.Plugin.GH_PluginUtil.UnloadGrasshopper();
     }
 
   }

@@ -123,6 +123,10 @@ namespace GH_BC.Visualization
 
         GetPreview(_activeDefinition, _compoundDrawable, onBcObject, onSuccessfulExtract);
       }
+      else
+      {
+        UnhighlightBcData();
+      }
       graphicsManager.UpdateTransient(_compoundDrawable, _vieportNums);
     }
     private void ObjectChanged(IGH_DocumentObject sender, GH_ObjectChangedEventArgs e)
@@ -284,7 +288,9 @@ namespace GH_BC.Visualization
           }
         }
         else
+        {
           onNotDrawble?.Invoke(obj);
+        }
       }
     }
   }

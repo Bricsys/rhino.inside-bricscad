@@ -12,12 +12,12 @@
 			<var prog="b" save="dwg" name="GhTransparency" type="int">
 				<title>Grasshopper graphics transparency</title>
 				<help>Transparency of the grasshopper graphics.</help>
-				<value min="1" max="100" default="90"/>
+				<value min="0" max="100" default="60"/>
 			</var>
 			<var prog="b" save="dwg" name="GhHostTransparency" type="int">
 				<title>Host entity transparency</title>
 				<help>Transparency of the grasshopper graphics.</help>
-				<value min="1" max="100" default="10"/>
+				<value min="0" max="100" default="80"/>
 			</var>
 			<var prog="b" save="dwg" name="GhVisualStyle" type="int">
 				<title>Visual style</title>

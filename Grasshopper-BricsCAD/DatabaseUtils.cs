@@ -12,10 +12,13 @@ namespace GH_BC
     public const string Realistic = "Realistic";
     public static ObjectId VisualStyleId(Database database, string visualStyleName)
     {
-      using (var dictionary = database.VisualStyleDictionaryId.GetObject(OpenMode.ForRead) as DBDictionary)
+      using (var transaction = database.TransactionManager.StartTransaction())
       {
-        var res = dictionary?.GetAt(visualStyleName) ?? ObjectId.Null;
-        return res;
+        using (var dictionary = transaction.GetObject(database.VisualStyleDictionaryId, OpenMode.ForRead) as DBDictionary)
+        {
+          var res = dictionary?.GetAt(visualStyleName) ?? ObjectId.Null;
+          return res;
+        }
       }
     }
     public static bool IsNullObjectLink(this FullSubentityPath fsp)

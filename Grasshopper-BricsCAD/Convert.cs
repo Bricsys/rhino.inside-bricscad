@@ -177,11 +177,14 @@ namespace GH_BC
     {
       if (DatabaseUtils.IsCurve(id))
       {
-        using (var dbCurve = id.GetObject(_OdDb.OpenMode.ForRead) as _OdDb.Curve)
+        using (var transaction = id.Database.TransactionManager.StartTransaction())
         {
-          var geometry = dbCurve?.ToRhino();
-          if (geometry != null)
-            return geometry;
+          using (var dbCurve = transaction.GetObject(id, _OdDb.OpenMode.ForRead) as _OdDb.Curve)
+          {
+            var geometry = dbCurve?.ToRhino();
+            if (geometry != null)
+              return geometry;
+          }
         }
       }
 

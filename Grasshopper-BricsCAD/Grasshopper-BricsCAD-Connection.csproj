@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -9,9 +9,10 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>GH_BC</RootNamespace>
     <AssemblyName>Grasshopper-BricsCAD-Connection</AssemblyName>
-    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
@@ -37,23 +38,23 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="Eto">
-      <HintPath>..\Thirdparty\Rhino-WIP\Eto.dll</HintPath>
+      <HintPath>..\Thirdparty\Rhino7\Eto.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="GH_IO">
-      <HintPath>..\Thirdparty\Rhino-WIP\GH_IO.dll</HintPath>
+      <HintPath>..\Thirdparty\Rhino7\GH_IO.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Grasshopper">
-      <HintPath>..\Thirdparty\Rhino-WIP\Grasshopper.dll</HintPath>
+      <HintPath>..\Thirdparty\Rhino7\Grasshopper.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Rhino.UI">
-      <HintPath>..\Thirdparty\Rhino-WIP\Rhino.UI.dll</HintPath>
+      <HintPath>..\Thirdparty\Rhino7\Rhino.UI.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="RhinoCommon">
-      <HintPath>..\Thirdparty\Rhino-WIP\RhinoCommon.dll</HintPath>
+      <HintPath>..\Thirdparty\Rhino7\RhinoCommon.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
@@ -86,6 +87,7 @@
     <Compile Include="GH\Components\LinearSolid.cs" />
     <Compile Include="GH\Components\Profiles.cs" />
     <Compile Include="GH\Components\Properties.cs" />
+    <Compile Include="GH\Components\RenderMaterial.cs" />
     <Compile Include="GH\Components\SpatialLocation.cs" />
     <Compile Include="GH\GeometryParam.cs" />
     <Compile Include="GH\ParameterTypes.cs" />
@@ -155,6 +157,10 @@
     <None Include="Resources\setproperty.png" />
     <None Include="Resources\story.png" />
     <None Include="Resources\vertex.png" />
+    <None Include="Resources\rendermaterial.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="grasshopper_settings.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

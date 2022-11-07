@@ -120,18 +120,18 @@
           <RibbonPanelSource Text="Grasshopper" UID="Grasshopper-BricsCAD">
             <Name>Grasshopper</Name>
             <RibbonRow>
-              <RibbonCommandButton ButtonStyle="LargeWithHorizontalText" MenuMacroID="rhino" Text="Rhino"/>
-              <RibbonCommandButton ButtonStyle="LargeWithHorizontalText" MenuMacroID="grasshopper" Text="Grasshopper"/>
+              <RibbonCommandButton ButtonStyle="LargeWithText" MenuMacroID="rhino" Text="Rhino"/>
+              <RibbonCommandButton ButtonStyle="LargeWithText" MenuMacroID="grasshopper" Text="Grasshopper"/>
             </RibbonRow>
           </RibbonPanelSource>
           <RibbonPanelSource Text="Grasshopper data" UID="Grasshopper-data">
             <Name>Grasshopper data</Name>
             <RibbonRow>
-              <RibbonSplitButton ButtonStyle="LargeWithoutText">
+              <RibbonSplitButton ButtonStyle="LargeWithText">
                 <RibbonCommandButton MenuMacroID="attachghdata" Text="Attach GhData"/>
                 <RibbonCommandButton MenuMacroID="clearghdata" Text="Clear GhData"/></RibbonSplitButton>
-              <RibbonCommandButton ButtonStyle="LargeWithoutText" MenuMacroID="bakeghdata" Text="Bake GhData"/>
-              <RibbonCommandButton ButtonStyle="LargeWithoutText" MenuMacroID="ghdefinitions" Text="GhDefinitions"/>
+              <RibbonCommandButton ButtonStyle="LargeWithText" MenuMacroID="bakeghdata" Text="Bake GhData"/>
+              <RibbonCommandButton ButtonStyle="LargeWithText" MenuMacroID="ghdefinitions" Text="GhDefinitions"/>
             </RibbonRow>
           </RibbonPanelSource>
         </RibbonPanelSourceCollection>

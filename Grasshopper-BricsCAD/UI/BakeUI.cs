@@ -9,6 +9,9 @@ namespace GH_BC.UI
     private System.Windows.Forms.Button ColorButton;
     private System.Windows.Forms.Button OkButton;
     private System.Windows.Forms.Button CancelB;
+    private System.Windows.Forms.Label MaterialLabel;
+    private System.Windows.Forms.ToolTip MaterialTooltip;
+    private System.ComponentModel.IContainer components;
     public Teigha.Colors.Color Color { get; private set; }
     public string Layer { get; private set; }
     public string Material { get; private set; }
@@ -33,8 +36,8 @@ namespace GH_BC.UI
 
     private void InitializeComponent()
     {
+            this.components = new System.ComponentModel.Container();
             System.Windows.Forms.Label label1;
-            System.Windows.Forms.Label label2;
             System.Windows.Forms.Label label3;
             System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
             this.LayerBox = new System.Windows.Forms.ComboBox();
@@ -42,8 +45,9 @@ namespace GH_BC.UI
             this.ColorButton = new System.Windows.Forms.Button();
             this.OkButton = new System.Windows.Forms.Button();
             this.CancelB = new System.Windows.Forms.Button();
+            this.MaterialTooltip = new System.Windows.Forms.ToolTip(this.components);
             label1 = new System.Windows.Forms.Label();
-            label2 = new System.Windows.Forms.Label();
+            this.MaterialLabel = new System.Windows.Forms.Label();
             label3 = new System.Windows.Forms.Label();
             tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             tableLayoutPanel1.SuspendLayout();
@@ -53,29 +57,19 @@ namespace GH_BC.UI
             // 
             label1.Anchor = System.Windows.Forms.AnchorStyles.None;
             label1.AutoSize = true;
-            label1.Location = new System.Drawing.Point(40, 13);
+            label1.Location = new System.Drawing.Point(34, 11);
             label1.Name = "label1";
-            label1.Size = new System.Drawing.Size(36, 13);
+            label1.Size = new System.Drawing.Size(48, 17);
             label1.TabIndex = 0;
             label1.Text = "Layer:";
-            // 
-            // label2
-            // 
-            label2.Anchor = System.Windows.Forms.AnchorStyles.None;
-            label2.AutoSize = true;
-            label2.Location = new System.Drawing.Point(35, 53);
-            label2.Name = "label2";
-            label2.Size = new System.Drawing.Size(47, 13);
-            label2.TabIndex = 1;
-            label2.Text = "Material:";
             // 
             // label3
             // 
             label3.Anchor = System.Windows.Forms.AnchorStyles.None;
             label3.AutoSize = true;
-            label3.Location = new System.Drawing.Point(41, 93);
+            label3.Location = new System.Drawing.Point(36, 91);
             label3.Name = "label3";
-            label3.Size = new System.Drawing.Size(34, 13);
+            label3.Size = new System.Drawing.Size(45, 17);
             label3.TabIndex = 2;
             label3.Text = "Color:";
             // 
@@ -85,7 +79,7 @@ namespace GH_BC.UI
             tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
             tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
             tableLayoutPanel1.Controls.Add(label1, 0, 0);
-            tableLayoutPanel1.Controls.Add(label2, 0, 1);
+            tableLayoutPanel1.Controls.Add(this.MaterialLabel, 0, 1);
             tableLayoutPanel1.Controls.Add(label3, 0, 2);
             tableLayoutPanel1.Controls.Add(this.LayerBox, 1, 0);
             tableLayoutPanel1.Controls.Add(this.MaterialBox, 1, 1);
@@ -103,23 +97,35 @@ namespace GH_BC.UI
             tableLayoutPanel1.Size = new System.Drawing.Size(234, 161);
             tableLayoutPanel1.TabIndex = 0;
             // 
+            // MaterialLabel
+            // 
+            this.MaterialLabel.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.MaterialLabel.AutoSize = true;
+            this.MaterialLabel.Location = new System.Drawing.Point(27, 51);
+            this.MaterialLabel.Name = "MaterialLabel";
+            this.MaterialLabel.Size = new System.Drawing.Size(62, 17);
+            this.MaterialLabel.TabIndex = 1;
+            this.MaterialLabel.Text = "Material:";
+            this.MaterialLabel.MouseHover += new System.EventHandler(this.MaterialLabel_Hover);
+            // 
             // LayerBox
             // 
             this.LayerBox.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.LayerBox.FormattingEnabled = true;
-            this.LayerBox.Location = new System.Drawing.Point(126, 9);
+            this.LayerBox.Location = new System.Drawing.Point(126, 7);
             this.LayerBox.Name = "LayerBox";
-            this.LayerBox.Size = new System.Drawing.Size(98, 21);
+            this.LayerBox.Size = new System.Drawing.Size(98, 24);
             this.LayerBox.TabIndex = 3;
             // 
             // MaterialBox
             // 
             this.MaterialBox.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.MaterialBox.FormattingEnabled = true;
-            this.MaterialBox.Location = new System.Drawing.Point(126, 49);
+            this.MaterialBox.Location = new System.Drawing.Point(126, 47);
             this.MaterialBox.Name = "MaterialBox";
-            this.MaterialBox.Size = new System.Drawing.Size(98, 21);
+            this.MaterialBox.Size = new System.Drawing.Size(98, 24);
             this.MaterialBox.TabIndex = 4;
+            this.MaterialBox.MouseHover += new System.EventHandler(this.MaterialBox_Hover);
             // 
             // ColorButton
             // 
@@ -143,11 +149,11 @@ namespace GH_BC.UI
             this.OkButton.UseVisualStyleBackColor = true;
             this.OkButton.Click += new System.EventHandler(this.OkButton_Click);
             // 
-            // CancelB
+            // CancelButton
             // 
             this.CancelB.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.CancelB.Location = new System.Drawing.Point(138, 129);
-            this.CancelB.Name = "CancelB";
+            this.CancelB.Name = "CancelButton";
             this.CancelB.Size = new System.Drawing.Size(75, 23);
             this.CancelB.TabIndex = 7;
             this.CancelB.Text = "Cancel";
@@ -196,6 +202,16 @@ namespace GH_BC.UI
       Layer = LayerBox.SelectedItem as string;
       Material = MaterialBox.SelectedItem as string;
       DialogResult = System.Windows.Forms.DialogResult.OK;
+    }
+
+    private void MaterialLabel_Hover(object sender, EventArgs e)
+    {
+      MaterialTooltip.Show("Material to use if not set in the bake component", MaterialLabel);
+    }
+
+    private void MaterialBox_Hover(object sender, EventArgs e)
+    {
+      MaterialTooltip.Show("Material to use if not set in the bake component", MaterialBox);
     }
   }
 }

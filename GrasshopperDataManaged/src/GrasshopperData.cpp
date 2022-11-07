@@ -115,11 +115,11 @@ inline GhProperty ToGhProperty(System::Type^ type)
     return {};
 }
 
-GrasshopperData::GrasshopperData() : DBObject(mgdCtorHelper<DbGrasshopperData>(), true)
+GrasshopperData::GrasshopperData() : DBObject(mgdCtorHelper(new DbGrasshopperData), true)
 {}
 
 GrasshopperData::GrasshopperData(System::String^ definition) : 
-                                 DBObject(mgdCtorHelper<DbGrasshopperData>(), true)
+                                 DBObject(mgdCtorHelper(new DbGrasshopperData), true)
 {
     Definition = definition;
 }
@@ -127,12 +127,6 @@ GrasshopperData::GrasshopperData(System::String^ definition) :
 GrasshopperData::GrasshopperData(System::IntPtr unmanagedPointer, bool autoDelete) :
                                        DBObject(mgdCtorHelper(unmanagedPointer), autoDelete)
 {}
-
-void GrasshopperData::DeleteUnmanagedObject()
-{
-    deleteUnmanagedObject(GetImpObj());
-    __super::DeleteUnmanagedObject();
-}
 
 DbGrasshopperData* GrasshopperData::GetImpObj()
 {

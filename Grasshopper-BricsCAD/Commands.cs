@@ -24,6 +24,7 @@ namespace GH_BC
     {
       Rhinoceros.WindowVisible = !Rhinoceros.WindowVisible;
     }
+
     [CommandMethod("Grasshopper")]
     public static void StartGrasshopper()
     {
@@ -42,7 +43,37 @@ namespace GH_BC
       UI.GhUI.CustomizeUI();
     }
 
-    [CommandMethod("ToGrasshopper")]
+    [CommandMethod("OpenGhFile")]
+    public static void OpenGrasshopperFile()
+    {
+      var editor = Application.DocumentManager.MdiActiveDocument.Editor;
+
+      PromptStringOptions pso = new PromptStringOptions("\nGive Path to Grasshopper Script");
+      PromptResult pr = editor.GetString(pso);
+      if (pr.Status != PromptStatus.OK)
+        return;
+
+      if (!Rhinoceros.Script.IsEditorVisible())
+      {
+        if (System.Convert.ToInt16(Application.GetSystemVariable("DWGTITLED")) == 0)
+        {
+          _WF.MessageBox.Show("Bricscad drawing must be saved before using Grasshopper");
+          return;
+        }
+        Rhinoceros.Script.ShowEditor();
+        GhDrawingContext.RelinkToDoc(Application.DocumentManager.MdiActiveDocument);
+      }
+      UI.GhUI.CustomizeUI();
+
+      var opened = Rhinoceros.Script.OpenDocument(Path.Combine(Path.GetDirectoryName(Application.DocumentManager.MdiActiveDocument.Name), pr.StringResult));
+      if (!opened)
+      {
+        _WF.MessageBox.Show("Grasshopper file failed to open");
+        return;
+      }
+    }
+
+    [CommandMethod("ToGrasshopper", CommandFlags.UsePickSet)]
     public static void ToGrasshopper()
     {
       if (GhDrawingContext.LinkedDocument == null &&
@@ -118,9 +149,10 @@ namespace GH_BC
                                                bounds.Top + ghDocObj.Attributes.Bounds.Height);
         ghDoc.AddObject(ghDocObj, true);
       }
+      editor.SetImpliedSelection(selection.Value);
     }
 
-    [CommandMethod("AttachGhData")]
+    [CommandMethod("AttachGhData", CommandFlags.UsePickSet)]
     public static void AttachGhData()
     {
       var editor = Application.DocumentManager.MdiActiveDocument.Editor;
@@ -130,32 +162,51 @@ namespace GH_BC
         return;
 
       string ghDef = null;
-      var srchPath = Application.GetSystemVariable("SRCHPATH") as string;
-      var dwgPath = Path.GetDirectoryName(Application.DocumentManager.MdiActiveDocument.Name);
       while (true)
       {
         if (!GH_IO.Serialization.GH_Archive.OpenFileDialog("Select grasshopper defintion", ref ghDef, null)
           || string.IsNullOrEmpty(ghDef))
           return;
-        var ghDir = Path.GetDirectoryName(ghDef);
-        if (!srchPath.Contains(ghDir) && dwgPath != ghDir)
+        ghDef = getRelativeGhDataPath(ghDef);
+        if (string.IsNullOrEmpty(ghDef))
         {
-          _WF.MessageBox.Show("Directory should be equal to the current DWG location or be contained in SRCHPATH");
+          _WF.MessageBox.Show("Directory should be a subfolder of the current DWG location or be contained in SRCHPATH");
           continue;
         }
         break;
       }
-      if (string.IsNullOrEmpty(ghDef))
-        return;
+      attachData(selection, ghDef);
+      editor.SetImpliedSelection(selection.Value);
+    }
+
+    private static string getRelativeGhDataPath(string ghDef)
+    {
+      var srchPath = Application.GetSystemVariable("SRCHPATH") as string;
+      var srchPaths = srchPath.Split(';');
+      var dwgDir = Path.GetDirectoryName(Application.DocumentManager.MdiActiveDocument.Name);
+      var ghDir = Path.GetDirectoryName(ghDef);
+      if (srchPaths.Contains(ghDir))
+        return ghDef;
+
+      if (ghDir.Length < dwgDir.Length || !ghDir.Substring(0, dwgDir.Length).Equals(dwgDir))
+        return null;
+
+      return ghDef.Remove(0, dwgDir.Length + 1);
+    }
+
+    private static void attachData(PromptSelectionResult selection, string path)
+    {
+      var editor = Application.DocumentManager.MdiActiveDocument.Editor;
+      var doc = editor.Document;
 
       using (var transaction = doc.TransactionManager.StartTransaction())
       {
         for (int i = 0; i < selection.Value.Count; ++i)
         {
-          using (var ghData = new GrasshopperData(Path.GetFileName(ghDef))
-            {
-              IsVisible = true
-            })
+          using (var ghData = new GrasshopperData(path)
+          {
+            IsVisible = true
+          })
           {
             using (var entity = transaction.GetObject(selection.Value[i].ObjectId, OpenMode.ForWrite) as Entity)
             {
@@ -170,7 +221,47 @@ namespace GH_BC
         transaction.Commit();
       }
     }
-    [CommandMethod("ClearGhData")]
+
+    [CommandMethod("-AttachGhData", CommandFlags.UsePickSet)]
+    public static void CommandLineAttachGhData()
+    {
+      var editor = Application.DocumentManager.MdiActiveDocument.Editor;
+      var doc = editor.Document;
+
+      PromptStringOptions pso = new PromptStringOptions("\nGive Relative path or [Absolute path]");
+      pso.AppendKeywordsToMessage = true;
+      PromptResult pr = editor.GetString(pso);
+      if (pr.Status != PromptStatus.OK)
+        return;
+      string path = pr.StringResult;
+      if (path.ToUpper().Equals("A") || path.ToUpper().Equals("ABSOLUTE"))
+      {
+        pso = new PromptStringOptions("\nGive absolute path");
+        pr = editor.GetString(pso);
+        if (pr.Status != PromptStatus.OK)
+          return;
+
+        path = getRelativeGhDataPath(pr.StringResult);
+        if (string.IsNullOrEmpty(path))
+        {
+          editor.WriteMessage("Directory should be a subfolder of the current DWG location or be contained in SRCHPATH");
+          return;
+        }
+      }
+      if (!Path.GetExtension(path).Equals(".gh") && !Path.GetExtension(path).Equals(".ghx"))
+      {
+        editor.WriteMessage("\nFile should be a .gh or .ghx file.");
+        return;
+      }
+      var selection = editor.GetSelection();
+      if (selection.Status != PromptStatus.OK)
+        return;
+
+      attachData(selection, path);
+      editor.SetImpliedSelection(selection.Value);
+    }
+
+    [CommandMethod("ClearGhData", CommandFlags.UsePickSet)]
     public static void ClearGhData()
     {
       var editor = Application.DocumentManager.MdiActiveDocument.Editor;
@@ -191,8 +282,10 @@ namespace GH_BC
         }
         transaction.Commit();
       }
+      editor.SetImpliedSelection(selection.Value);
     }
-    [CommandMethod("BakeGhData")]
+
+    [CommandMethod("BakeGhData", CommandFlags.UsePickSet)]
     public static void BakeGhData()
     {
       var editor = Application.DocumentManager.MdiActiveDocument.Editor;
@@ -226,13 +319,15 @@ namespace GH_BC
       var docExt = GhBcConnection.GrasshopperDataExtension.GrasshopperDataManager(Application.DocumentManager.MdiActiveDocument, true);
       docExt?.Bake(ghDataToBake, bakeProperties);
     }
+
     [CommandMethod("GhDefinitions")]
     public static void GhDefinitions()
     {
       var dlg = new UI.GhDefinitionDialog();
       dlg.ShowDialog();
     }
-    [CommandMethod("GhRegen", CommandFlags.Transparent)]
+
+    [CommandMethod("GhRegen", CommandFlags.Transparent | CommandFlags.Redraw)]
     public static void GhRegen()
     {
       var activeDoc = Application.DocumentManager.MdiActiveDocument;
@@ -240,5 +335,6 @@ namespace GH_BC
       if (docExt != null)
         GhBcConnection.GrasshopperDataExtension.Update(docExt);
     }
+
   }
 }

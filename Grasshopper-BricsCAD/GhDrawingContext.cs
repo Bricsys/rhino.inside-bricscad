@@ -81,8 +81,9 @@ namespace GH_BC
     static void OnObjectAppended(object sender, _OdDb.ObjectEventArgs e)
     {
       var objId = e.DBObject.ObjectId;
-      if (objId.ObjectClass.IsDerivedFrom(_OdRx.RXObject.GetClass(typeof(_OdDb.Entity))))
-        _appended.Add(e.DBObject.ObjectId.Handle);
+      if (objId.ObjectClass.IsDerivedFrom(_OdRx.RXObject.GetClass(typeof(_OdDb.Entity))) ||
+          objId.ObjectClass.IsDerivedFrom(_OdRx.RXObject.GetClass(typeof(_OdDb.Material))))
+        _appended.Add(objId.Handle);
     }
     static void OnCommandEnded(object sender, _BcAp.CommandEventArgs e) => _commands.Add(e.GlobalCommandName);
     static void OnDocumentBecameCurrent(object sender, _BcAp.DocumentCollectionEventArgs e)

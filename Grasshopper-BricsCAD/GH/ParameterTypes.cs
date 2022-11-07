@@ -68,11 +68,14 @@ namespace GH_BC.Types
       Rhino.Geometry.GeometryBase geom = null;
       if (Value.IsSubentity())
       {
-        using (var entity = ObjectId.GetObject(OpenMode.ForRead) as Entity)
+        using (var transaction = ObjectId.Database.TransactionManager.StartTransaction())
         {
-          using (var subent = entity?.GetSubentity(Value))
+          using (var entity = transaction.GetObject(ObjectId, OpenMode.ForRead) as Entity)
           {
-            geom = subent?.ToRhino();
+            using (var subent = entity?.GetSubentity(Value))
+            {
+              geom = subent?.ToRhino();
+            }
           }
         }
       }

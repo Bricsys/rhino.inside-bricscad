@@ -15,9 +15,6 @@ namespace GH_BC
         GrasshopperData();
         GrasshopperData(System::String^ definition);
 
-    protected:
-        virtual void DeleteUnmanagedObject() override;
-
     public protected:
         GrasshopperData(System::IntPtr unmanagedPointer, bool autoDelete);
         DbGrasshopperData*  GetImpObj();
