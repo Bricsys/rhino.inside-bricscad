@@ -10,7 +10,7 @@ namespace GH_BC.Components
     public LinearSolidComponent() : base("Linear Solid Info", "LS", "Returns information (axis, extrusion path and profile curves) about a linear solid present in the BricsCAD drawing.", "BricsCAD", UI.GhUI.Information)
     {}
     public override Guid ComponentGuid => new Guid("FAFCBABF-A270-4D42-AEC5-1C508CC004A9");
-    public override GH_Exposure Exposure => GH_Exposure.tertiary;
+    public override GH_Exposure Exposure => GH_Exposure.primary;
     public override bool IsPreviewCapable { get { return false; } }
     public override bool IsBakeCapable { get { return false; } }
     protected override System.Drawing.Bitmap Icon => Properties.Resources.linearsolid;

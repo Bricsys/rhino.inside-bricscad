@@ -46,12 +46,12 @@ namespace GH_BC.Visualization
         return false;
       return true;
     }
-    public void VieportDraw(ViewportDraw wd)
+    public void ViewportDraw(ViewportDraw vd)
     {
       if (_geometry is Rhino.Geometry.Point point)
       {
         var dbPoint = new Teigha.DatabaseServices.DBPoint(point.Location.ToHost());
-        dbPoint.ViewportDraw(wd);
+        dbPoint.ViewportDraw(vd);
         dbPoint.Dispose();
       }
     }

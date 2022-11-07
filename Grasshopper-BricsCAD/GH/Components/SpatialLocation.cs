@@ -19,39 +19,13 @@ namespace GH_BC.Parameters
     public override GH_Exposure Exposure => GH_Exposure.hidden;
   }
 
-  public class ElementType : GH_Param<Types.ElementType>
+  public class ElementType_OBSOLETE : GH_Param<Types.ElementType>
   {
-    public ElementType()
+    public ElementType_OBSOLETE()
       : base(new GH_InstanceDescription("Element Type", "ET", "BricsCAD BIM type.", "BricsCAD", GhUI.BimData)) { }
     public override Guid ComponentGuid => new Guid("10FBB25D-E738-4B10-BFFD-E32D8C80976E");
     public override GH_Exposure Exposure => GH_Exposure.hidden;
     protected override Types.ElementType InstantiateT() => new Types.ElementType();
-  }
-
-  public class ElementTypePicker : GH_ValueList
-  {
-    public override Guid ComponentGuid => new Guid("A894B640-5F8E-4450-91A4-7A0283B6D578");
-    public override GH_Exposure Exposure => GH_Exposure.tertiary;
-    protected override Bitmap Icon => Properties.Resources.elementtype;
-    public ElementTypePicker()
-    {
-      Category = "BricsCAD";
-      SubCategory = GhUI.BimData;
-      Name = "BIM Types";
-      MutableNickName = false;
-      Description = "Provides a type picker for all the BIM Types available in BricsCAD.";
-      ListMode = GH_ValueListMode.DropDown;
-      NickName = "BIM type";
-
-      var selectedItems = ListItems.Where(x => x.Selected).Select(x => x.Expression).ToList();
-      ListItems.Clear();
-      foreach (var suit in Enum.GetValues(typeof(Bricscad.Bim.BimTypeElement)))
-      {
-        var item = new GH_ValueListItem(suit.ToString(), ((int) suit).ToString());
-        item.Selected = selectedItems.Contains(item.Expression);
-        ListItems.Add(item);
-      }
-    }
   }
 
   public class DocumentBuildingsPicker : GH_ValueList, IGH_BcParam

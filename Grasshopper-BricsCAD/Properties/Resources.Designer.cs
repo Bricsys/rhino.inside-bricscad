@@ -83,6 +83,16 @@ namespace GH_BC.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap blocks {
+            get {
+                object obj = ResourceManager.GetObject("blocks", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap building {
             get {
                 object obj = ResourceManager.GetObject("building", resourceCulture);
@@ -156,6 +166,16 @@ namespace GH_BC.Properties {
         internal static System.Drawing.Bitmap ifcexport {
             get {
                 object obj = ResourceManager.GetObject("ifcexport", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap insertblock {
+            get {
+                object obj = ResourceManager.GetObject("insertblock", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

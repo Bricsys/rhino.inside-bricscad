@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -81,6 +81,7 @@
     <Compile Include="GhDefinitionManager.cs" />
     <Compile Include="GhDrawingContext.cs" />
     <Compile Include="GH\Components\BakeComponent.cs" />
+    <Compile Include="GH\Components\Blocks.cs" />
     <Compile Include="GH\Components\BuildingElement.cs" />
     <Compile Include="GH\Components\DocumentElements.cs" />
     <Compile Include="GH\Components\Ifc.cs" />
@@ -135,6 +136,7 @@
   <ItemGroup>
     <None Include="Resources\bake.png" />
     <None Include="Resources\bakebuildingelement.png" />
+    <None Include="Resources\blocks.png" />
     <None Include="Resources\building.png" />
     <None Include="Resources\curve.png" />
     <None Include="Resources\documentelements.png" />
@@ -143,6 +145,7 @@
     <None Include="Resources\entity.png" />
     <None Include="Resources\face.png" />
     <None Include="Resources\ifcexport.png" />
+    <None Include="Resources\insertblock.png" />
     <None Include="Resources\linearsolid.png" />
     <None Include="Resources\link.png" />
     <None Include="Resources\plane.png" />

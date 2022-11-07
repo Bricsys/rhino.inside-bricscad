@@ -12,7 +12,7 @@ namespace GH_BC.Types
     ObjectId ObjectId { get; }
     Handle PersistentRef { get; }
     SubentityType SubentType { get; }
-    int SubentIndex { get; }
+    IntPtr SubentIndex { get; }
     string BcDocName { get; }
     Rhino.Geometry.GeometryBase getGeometry();
   }
@@ -43,7 +43,7 @@ namespace GH_BC.Types
     public override bool LoadGeometry() => IsValid || LoadGeometry(GhDrawingContext.LinkedDocument);
     public Handle PersistentRef { get; private set; }
     public SubentityType SubentType { get; private set; }
-    public int SubentIndex { get; private set; }
+    public IntPtr SubentIndex { get; private set; }
     public virtual bool LoadGeometry(Document doc)
     {
       if (!Value.IsNullObjectLink())
@@ -105,7 +105,7 @@ namespace GH_BC.Types
       BcDocName = reader.GetString("BcDocName");
       PersistentRef = new Handle(reader.GetInt64("Handle"));
       SubentType = (SubentityType) reader.GetByte("SubentityType");
-      SubentIndex = reader.GetInt32("Index");
+      SubentIndex = new IntPtr(reader.GetInt32("Index"));
       return true;
     }
     public override bool Write(GH_IO.Serialization.GH_IWriter writer)
@@ -115,7 +115,7 @@ namespace GH_BC.Types
         writer.SetString("BcDocName", BcDocName);
         writer.SetInt64("Handle", PersistentRef.Value);
         writer.SetByte("SubentityType", (byte) SubentType);
-        writer.SetInt32("Index", SubentIndex);
+        writer.SetInt32("Index", SubentIndex.ToInt32());
       }
       return true;
     }
@@ -125,7 +125,7 @@ namespace GH_BC.Types
     {
       PersistentRef = reference.InsertId().Handle;
       SubentType = reference.SubentId.Type;
-      SubentIndex = reference.SubentId.Index;
+      SubentIndex = reference.SubentId.IndexPtr;
       BcDocName = System.IO.Path.GetFileNameWithoutExtension(docName);
     }
     public override Rhino.Geometry.BoundingBox GetBoundingBox(Rhino.Geometry.Transform xform)

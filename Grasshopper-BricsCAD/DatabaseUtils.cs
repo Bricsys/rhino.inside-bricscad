@@ -56,7 +56,7 @@ namespace GH_BC
         case SubentityType.Edge: res += "E_"; break;
         case SubentityType.Vertex: res += "V_"; break;
       }
-      return res + fsp.SubentId.Index.ToString();
+      return res + fsp.SubentId.IndexPtr.ToString();
     }
     public static ObjectIdCollection AppendObjectsToDatabase(DBObjectCollection objects, Database database, bool createUndo)
     {

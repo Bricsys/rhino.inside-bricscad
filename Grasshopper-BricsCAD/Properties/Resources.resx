@@ -124,6 +124,9 @@
   <data name="bakebuildingelement" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\bakebuildingelement.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="blocks" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\blocks.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="building" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\building.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -147,6 +150,9 @@
   </data>
   <data name="ifcexport" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\ifcexport.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="insertblock" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\insertblock.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="linearsolid" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\linearsolid.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>

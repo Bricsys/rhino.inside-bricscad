@@ -63,7 +63,7 @@ namespace GH_BC.Components
     {
       Menu_AppendItem(menu, "Bake into BricsCAD", BakeItemCall);
     }
-    private void BakeItemCall(object sender, EventArgs e)
+    protected void BakeItemCall(object sender, EventArgs e)
     {
       var bakeProperties = new BakeDialog();
       if (bakeProperties.ShowDialog(Grasshopper.Instances.DocumentEditor) == DialogResult.OK)

@@ -105,7 +105,7 @@ namespace GH_BC
         }
         else
           selectedObjects.Add(new FullSubentityPath(new ObjectId[] { selection.Value[i].ObjectId },
-                                                    new SubentityId(SubentityType.Null, 0)));
+                                                    new SubentityId(SubentityType.Null, System.IntPtr.Zero)));
       }
       if (selectedObjects.Count == 0)
         return;

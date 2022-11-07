@@ -1,8 +1,12 @@
 using Grasshopper.Kernel;
+using Grasshopper.Kernel.Types;
 using Grasshopper;
 using System.Collections.Generic;
 using System.Linq;
 using System;
+using Rhino.Geometry;
+using _OdDb = Teigha.DatabaseServices;
+using _OdGe = Teigha.Geometry;
 using Teigha.GraphicsInterface;
 
 namespace GH_BC.Visualization
@@ -268,7 +272,7 @@ namespace GH_BC.Visualization
           continue;
 
         if (obj is IGH_PreviewObject previewObject)
-        { 
+        {
           if (previewObject.IsPreviewCapable && !previewObject.Hidden)
           {
             var geometries = new List<Rhino.Geometry.GeometryBase>();
@@ -286,10 +290,76 @@ namespace GH_BC.Visualization
               onSuccessfulExtract?.Invoke(obj);
             }
           }
+          else if (!previewObject.Hidden && previewObject is GH_BC.Components.InsertBlockReference blockComponent)
+          {
+            getBlockRefPreview(blockComponent, compoundDrawable);
+          }
         }
         else
         {
           onNotDrawble?.Invoke(obj);
+        }
+      }
+    }
+
+    private static void getBlockRefPreview(GH_BC.Components.InsertBlockReference blockComponent, CompoundDrawable compoundDrawable)
+    {
+      List<IGH_Param> inputParams = blockComponent.Params.Input;
+      var handleData = inputParams[blockComponent.Params.IndexOfInputParam("Block Definition")].VolatileData;
+      if (handleData.IsEmpty)
+        return;
+      var insertionPtData = inputParams[blockComponent.Params.IndexOfInputParam("Insertion Point")].VolatileData;
+      var rotationData = inputParams[blockComponent.Params.IndexOfInputParam("Rotation Angle")].VolatileData;
+      var ScaleData = inputParams[blockComponent.Params.IndexOfInputParam("Scale")].VolatileData;
+      var ExplodeData = inputParams[blockComponent.Params.IndexOfInputParam("Explode")].VolatileData;
+
+      int maxBranches = new[] { handleData.PathCount, insertionPtData.PathCount, rotationData.PathCount,
+                                ScaleData.PathCount, ExplodeData.PathCount }.Max();
+      var db = GhDrawingContext.LinkedDocument.Database;
+
+      for (int i = 0; i < maxBranches; i++)
+      {
+        var handleList = handleData.get_Branch(Math.Min(i, handleData.PathCount - 1));
+        var insertionPtList = insertionPtData.IsEmpty ? new List<object>() : insertionPtData.get_Branch(Math.Min(i, insertionPtData.PathCount - 1));
+        var rotationList = rotationData.IsEmpty ? new List<object>() : rotationData.get_Branch(Math.Min(i, rotationData.PathCount - 1));
+        var ScaleList = ScaleData.IsEmpty ? new List<object>() : ScaleData.get_Branch(Math.Min(i, ScaleData.PathCount - 1));
+        var ExplodeList = ExplodeData.IsEmpty ? new List<object>() : ExplodeData.get_Branch(Math.Min(i, ExplodeData.PathCount - 1));
+        
+        int maxListCount = new[] { handleList.Count, insertionPtList.Count, rotationList.Count,
+                                  ScaleList.Count, ExplodeList.Count }.Max();
+        
+        for (int j = 0; j < maxListCount; j++)
+        {
+          if (!(handleList[Math.Min(j, handleList.Count - 1)] as IGH_Goo).CastTo(out string stringHandle))
+          {
+            blockComponent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Error rendering block");
+            continue;
+          }
+          var btrHandle = new _OdDb.Handle(System.Convert.ToInt64(stringHandle, 16));
+          if (!db.TryGetObjectId(btrHandle, out var btrId))
+          {
+            blockComponent.AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Error rendering block");
+            continue;
+          }
+
+          if (insertionPtList.Count == 0 || !(insertionPtList[Math.Min(j, insertionPtList.Count - 1)] as IGH_Goo).CastTo(out Point3d insertionPoint))
+            insertionPoint = new Point3d(0, 0, 0);
+
+          if (rotationList.Count == 0 || !(rotationList[Math.Min(j, rotationList.Count - 1)] as IGH_Goo).CastTo(out double rotation))
+            rotation = 0.0;
+
+          if (ScaleList.Count == 0 || !(ScaleList[Math.Min(j, ScaleList.Count - 1)] as IGH_Goo).CastTo(out Vector3d scale))
+            scale = new Vector3d(1, 1, 1);
+
+          // explode input only has an influence on the number of previews shown, but not the actual preview
+
+          var blockRef = new _OdDb.BlockReference(insertionPoint.ToHost(), btrId)
+          {
+            Rotation = rotation,
+            ScaleFactors = new _OdGe.Scale3d(scale.X, scale.Y, scale.Z)
+          };
+
+          compoundDrawable.AddBlockRef(blockRef, blockComponent.Attributes.Selected);
         }
       }
     }
